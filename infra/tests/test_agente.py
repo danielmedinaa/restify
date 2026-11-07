@@ -95,7 +95,7 @@ def test_crear_levanta_en_orden_y_genera_secretos_privados(servidor, tmp_path):
     cmds = [" ".join(c) for c in falso.llamadas]
     i_api = next(i for i, c in enumerate(cmds) if "up -d db redis api" in c)
     i_front = next(i for i, c in enumerate(cmds) if "up -d front" in c)
-    assert i_api < i_front and all("-p restify-resto1" in c for c in cmds)
+    assert i_api < i_front and all("-p restify-resto1" in c for c in cmds if c.startswith("compose"))
 
 
 def test_crear_dos_veces_no_cambia_los_secretos(servidor, tmp_path):
@@ -123,7 +123,7 @@ def test_detener_reanudar_eliminar(servidor, tmp_path):
     assert llamar(sock, "/reanudar", {"sub": "resto1"}).status_code == 200
     assert llamar(sock, "/eliminar", {"sub": "resto1"}).json() == {"estado": "eliminada"}
     cmds = [" ".join(c) for c in falso.llamadas]
-    assert any(c.endswith("stop") for c in cmds) and any(c.endswith("start") for c in cmds)
+    assert any(c.endswith("stop") for c in cmds) and any(c.endswith("up -d") for c in cmds)
     assert any("down -v --remove-orphans" in c for c in cmds)
     assert not (tmp_path / "instancias" / "resto1").exists()
 
@@ -131,3 +131,68 @@ def test_detener_reanudar_eliminar(servidor, tmp_path):
 def test_rutas_desconocidas(servidor):
     sock, _ = servidor
     assert llamar(sock, "/ejecutar", {"cmd": "ls"}).status_code == 404
+
+
+# ---------------------------------------------------------------- aislamiento entre instancias
+
+def test_cada_instancia_tiene_su_propia_red_y_no_comparte_ninguna(servidor, tmp_path):
+    sock, _ = servidor
+    llamar(sock, "/crear", CREAR)
+    llamar(sock, "/crear", {**CREAR, "sub": "resto2"})
+    for sub in ("resto1", "resto2"):
+        compose = (tmp_path / "instancias" / sub / "docker-compose.yml").read_text()
+        assert f"name: restify-{sub}-edge" in compose
+        assert "external" not in compose and "restify-net" not in compose  # ya no hay una red común entre clientes
+    assert "restify-resto2-edge" not in (tmp_path / "instancias" / "resto1" / "docker-compose.yml").read_text()
+
+
+def test_crear_conecta_solo_el_proxy_y_el_panel_a_la_red_de_la_instancia(servidor):
+    sock, falso = servidor
+    llamar(sock, "/crear", CREAR)
+    cmds = [" ".join(c) for c in falso.llamadas]
+    assert f"network connect restify-resto1-edge {agente.PROXY}" in cmds
+    assert f"network connect --alias panel restify-resto1-edge {agente.PANEL}" in cmds
+    assert len([c for c in cmds if c.startswith("network connect")]) == 2  # nadie más
+
+
+def test_si_no_se_puede_conectar_el_proxy_el_error_es_claro(servidor):
+    sock, falso = servidor
+    falso.fallar_en = "connect"
+    r = llamar(sock, "/crear", CREAR)
+    assert r.status_code == 500 and "No se pudo conectar" in r.json()["error"]
+
+
+def test_conectar_dos_veces_no_falla(servidor, monkeypatch):
+    sock, falso = servidor
+    original = falso.__call__
+
+    def ya_existe(args, cwd=None, timeout=300):
+        if args[:2] == ["network", "connect"]:
+            import subprocess as sp
+            return sp.CompletedProcess(args, 1, "", "endpoint with name x already exists in network y")
+        return original(args, cwd, timeout)
+
+    monkeypatch.setattr(agente, "docker", ya_existe)
+    assert llamar(sock, "/crear", CREAR).status_code == 200
+
+
+def test_eliminar_desconecta_antes_de_borrar_la_red(servidor):
+    sock, falso = servidor
+    llamar(sock, "/crear", CREAR)
+    falso.llamadas.clear()
+    llamar(sock, "/eliminar", {"sub": "resto1"})
+    cmds = [" ".join(c) for c in falso.llamadas]
+    i_desc = max(i for i, c in enumerate(cmds) if c.startswith("network disconnect restify-resto1-edge"))
+    i_down = next(i for i, c in enumerate(cmds) if "down -v --remove-orphans" in c)
+    assert i_desc < i_down
+
+
+def test_cli_reconectar_vuelve_a_unir_a_todas(servidor, capsys):
+    sock, falso = servidor
+    llamar(sock, "/crear", CREAR)
+    llamar(sock, "/crear", {**CREAR, "sub": "resto2"})
+    falso.llamadas.clear()
+    assert agente.cli(["reconectar"]) == 0
+    cmds = [" ".join(c) for c in falso.llamadas]
+    for sub in ("resto1", "resto2"):
+        assert f"network connect restify-{sub}-edge {agente.PROXY}" in cmds

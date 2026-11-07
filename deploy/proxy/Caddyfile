@@ -102,6 +102,9 @@
 
 panel.{$DOMINIO} {
 	import web
+	# PANEL_IPS_PERMITIDAS (config.env): si se define, solo esas IPs/rangos pueden abrir el panel
+	@ajenos not remote_ip {$PANEL_IPS_PERMITIDAS:0.0.0.0/0 ::/0}
+	respond @ajenos "Acceso restringido" 403
 	reverse_proxy restify-pro-panel-1:8000
 }
 
@@ -117,6 +120,9 @@ pre.{$DOMINIO} {
 
 panel.pre.{$DOMINIO} {
 	import web
+	# PANEL_IPS_PERMITIDAS (config.env): si se define, solo esas IPs/rangos pueden abrir el panel
+	@ajenos not remote_ip {$PANEL_IPS_PERMITIDAS:0.0.0.0/0 ::/0}
+	respond @ajenos "Acceso restringido" 403
 	reverse_proxy restify-pre-panel-1:8000
 }
 
@@ -132,6 +138,9 @@ dev.{$DOMINIO} {
 
 panel.dev.{$DOMINIO} {
 	import web
+	# PANEL_IPS_PERMITIDAS (config.env): si se define, solo esas IPs/rangos pueden abrir el panel
+	@ajenos not remote_ip {$PANEL_IPS_PERMITIDAS:0.0.0.0/0 ::/0}
+	respond @ajenos "Acceso restringido" 403
 	reverse_proxy restify-dev-panel-1:8000
 }
 

@@ -137,4 +137,4 @@ def test_prefijo_y_red_separan_los_entornos(tmp_path, monkeypatch):
     monkeypatch.setattr(agente, "PREFIJO", "restify-dev")
     monkeypatch.setattr(agente, "RED", "dev-net")
     txt = agente._compose("resto1", "a:1", "b:1")
-    assert "name: restify-dev-resto1" in txt and "name: dev-net" in txt
+    assert "name: restify-dev-resto1" in txt and "name: restify-dev-resto1-edge" in txt

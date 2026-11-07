@@ -1,0 +1,7 @@
+[Unit]
+Description=Vigilancia de RESTIFY (disco, memoria, contenedores, páginas y certificados)
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/restify-vigilar

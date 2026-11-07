@@ -139,6 +139,8 @@ AGENTE_INSTANCIAS=$BASE/$ENTORNO/instancias
 AGENTE_RESPALDOS=$BASE/$ENTORNO/respaldos
 AGENTE_PREFIJO=$PREFIJO
 AGENTE_RED=$RED
+AGENTE_PROXY=restify-proxy-caddy-1
+AGENTE_PANEL=$PREFIJO-panel-1
 AGENTE_PULL=$PULL
 AGENTE_BANNER=$BANNER
 IMAGEN_API=$IMAGEN_API
@@ -161,7 +163,10 @@ docker compose -p "$PREFIJO" -f deploy/docker-compose.yml --env-file deploy/.env
 if [ "$FORZAR_PROXY" -eq 1 ] || ! docker ps -a --format '{{.Names}}' | grep -qx 'restify-proxy-caddy-1'; then
   install -d -m 755 "$BASE/proxy"
   cp deploy/proxy/Caddyfile deploy/proxy/Dockerfile deploy/proxy/docker-compose.yml "$BASE/proxy/"
-  ( umask 077; printf 'DOMINIO=%s\nACME_EMAIL=%s\nCLOUDFLARE_API_TOKEN=%s\n' "$DOMINIO" "$ACME_EMAIL" "$CLOUDFLARE_API_TOKEN" > "$BASE/proxy/.env" )
+  ( umask 077
+    printf 'DOMINIO=%s\nACME_EMAIL=%s\nCLOUDFLARE_API_TOKEN=%s\n' "$DOMINIO" "$ACME_EMAIL" "$CLOUDFLARE_API_TOKEN" > "$BASE/proxy/.env"
+    # Opcional: solo estas IPs/rangos (separados por espacio) pueden abrir el panel. Vacío = sin restricción.
+    [ -z "${PANEL_IPS_PERMITIDAS:-}" ] || printf 'PANEL_IPS_PERMITIDAS=%s\n' "$PANEL_IPS_PERMITIDAS" >> "$BASE/proxy/.env" )
   docker compose -f "$BASE/proxy/docker-compose.yml" up -d --build
 fi
 
@@ -171,6 +176,16 @@ if [ "$PULL" -eq 1 ]; then
   runuser -u restify -- bash -c 'set -a; . "$1"; set +a; cd "$2/infra"; exec python3 agente.py actualizar --api "$3" --front "$4"' _ \
     "$BASE/$ENTORNO/agente.env" "$RAIZ" "$IMAGEN_API" "$IMAGEN_FRONT"
 fi
+
+# El panel y el proxy pueden haberse recreado y pierden las redes de las instancias: se vuelven a unir (idempotente)
+runuser -u restify -- bash -c 'set -a; . "$1"; set +a; cd "$2/infra"; exec python3 agente.py reconectar' _ \
+  "$BASE/$ENTORNO/agente.env" "$RAIZ" || echo "AVISO: alguna instancia no pudo reconectarse (¿es anterior al aislamiento? se corrige al actualizarla)"
+
+# Vigilancia: revisa cada 5 min y avisa por Telegram si se configuró (deploy/vigilar.sh)
+install -m 755 deploy/vigilar.sh /usr/local/bin/restify-vigilar
+install -m 644 deploy/restify-vigilar.service deploy/restify-vigilar.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now restify-vigilar.timer >/dev/null
 
 echo
 docker compose -p "$PREFIJO" -f deploy/docker-compose.yml --env-file deploy/.env ps

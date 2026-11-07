@@ -15,18 +15,6 @@ if ! command -v docker >/dev/null; then
 fi
 systemctl enable --now docker
 
-# Tope a los logs de TODOS los contenedores nuevos (sin esto crecen hasta llenar el disco).
-# Si ya hay un daemon.json no se pisa; en ese caso agrega esta configuración a mano.
-if [ ! -f /etc/docker/daemon.json ]; then
-  cat > /etc/docker/daemon.json <<'EOF'
-{
-  "log-driver": "json-file",
-  "log-opts": { "max-size": "10m", "max-file": "3" }
-}
-EOF
-  systemctl restart docker
-fi
-
 # Usuario sin contraseña que es dueño del código y corre los agentes. Se entra con tu misma llave SSH.
 id restify >/dev/null 2>&1 || useradd --create-home --shell /bin/bash restify
 usermod -aG docker restify
@@ -76,5 +64,6 @@ cat <<'EOF'
 
 Servidor listo. Siguiente (ver deploy/README.md):
   1) Crea /srv/restify/config.env  (copia deploy/config.env.example y complétalo)
-  2) El primer despliegue de cada ambiente lo hace GitHub Actions (o a mano: deploy/subir.sh + desplegar.sh)
+  2) Endurece el servidor:  ssh root@IP 'bash -s' < deploy/endurecer-servidor.sh
+  3) El primer despliegue de cada ambiente lo hace GitHub Actions (o a mano: deploy/subir.sh + desplegar.sh)
 EOF

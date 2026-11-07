@@ -77,38 +77,52 @@ ssh root@IP '/srv/restify/dev/app/deploy/desplegar.sh dev'     # sin imágenes: 
 
 ## Seguridad
 
+**Aislamiento entre clientes.** Cada cliente tiene su **propia red** (`restify-<ambiente>-<cliente>-edge`) y su red interna
+sin salida (base y Redis). A la red de un cliente solo se unen el proxy (Caddy) y el panel (lo hace el agente con
+`docker network connect`); ningún cliente puede alcanzar a otro ni al panel de forma directa. Si el panel o el proxy se
+recrean, `desplegar.sh` los reconecta solo (`agente.py reconectar`).
+
 **Ya incluido en el código**
-- **Límites por IP en Caddy** (responde 429 con `Retry-After`): 600 peticiones/min en general, 20/min en logins
-  (`/login`, `/login/2fa`, `/bff/auth/login`) y 5/min en el formulario de contacto. Se ajustan en `deploy/proxy/Caddyfile`
-  (`(limites)`). Un local con varios empleados detrás de una misma IP comparte el cupo: súbelo si hace falta.
-- Cabeceras HSTS, `nosniff` y `Referrer-Policy` en todo; se oculta la cabecera `Server`.
-- Logs de Docker con tope (10 MB × 3 por contenedor) en los compose y en cada cliente; `daemon.json` en servidores nuevos.
+- Límites por IP en Caddy (429 con `Retry-After`): 600 peticiones/min en general, 20/min en logins
+  (`/login`, `/login/2fa`, `/bff/auth/login`) y 5/min en el formulario de contacto (`deploy/proxy/Caddyfile`, `(limites)`).
+- Cabeceras HSTS, `nosniff` y `Referrer-Policy`; se oculta `Server`.
+- Logs de Docker con tope (10 MB × 3) y live-restore.
+- **Panel restringible por IP**: `PANEL_IPS_PERMITIDAS` en `/srv/restify/config.env` (vacío = abierto). Con IP dinámica
+  puedes quedarte fuera: úsalo solo con IP fija o por VPN.
+- **Vigilancia** cada 5 min (`restify-vigilar`): disco >85 %, memoria <10 %, contenedores caídos o "unhealthy", páginas que no
+  responden y certificados a menos de 14 días. Avisa solo cuando algo cambia. Para Telegram define `TELEGRAM_BOT_TOKEN` y
+  `TELEGRAM_CHAT_ID` en `config.env`; sin ellos queda en el log (`journalctl -u restify-vigilar`).
 - Dependabot semanal (`.github/dependabot.yml`), con los PR hacia `develop`.
-- Además de lo anterior, las apps ya traen: bloqueo por intentos fallidos, 2FA en el panel, CSP estricta y cookies seguras.
+- Las apps ya traen: bloqueo por intentos fallidos, 2FA en el panel, CSP estricta y cookies seguras.
 
-**Para aplicar lo nuevo en un servidor que ya existe** (el Caddy se reconstruye con el plugin de límites):
-```bash
-./deploy/subir.sh dev restify@IP
-ssh root@IP '/srv/restify/dev/app/deploy/desplegar.sh dev --proxy'
-```
-Los logs con tope de las instancias de clientes ya creadas se aplican cuando se actualizan de versión.
-
-**Para hacer tú**
-1. **SSH sin contraseña** (solo después de comprobar que entras con tu llave, o te quedas fuera):
+**Cómo aplicarlo en un servidor que ya existe — en este orden**
+1. **Endurecer el servidor** (SSH solo con llave, fail2ban, red del sistema y redes de Docker para muchos clientes):
    ```bash
-   ssh root@IP "sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && sshd -t && systemctl reload ssh"
+   ssh root@IP 'bash -s' < deploy/endurecer-servidor.sh
    ```
-   Antes de cerrar tu sesión, abre OTRA terminal y comprueba que sigues pudiendo entrar. En Ubuntu 24.04 revisa también
-   `/etc/ssh/sshd_config.d/*.conf`: algunos archivos de ahí pueden volver a activar `PasswordAuthentication yes`.
-2. **GitHub → Settings → Branches**: regla para `main` (y `develop`): exigir pull request y que pasen los tests.
-3. **GitHub → Settings → Code security**: activa Dependabot alerts, Secret scanning y Push protection.
-4. **Respaldos fuera del servidor**: copia `/srv/restify/pro/respaldos` a otro lugar (tu PC o almacenamiento externo).
-5. **Pendiente grande**: aislar las instancias entre sí (hoy comparten la red del ambiente). Hacerlo antes de tener clientes reales.
+   ⚠️ Mantén tu sesión abierta y, en OTRA terminal, comprueba que sigues entrando con llave. La primera vez reinicia Docker
+   (unos segundos sin servicio; los contenedores vuelven solos).
+2. **Desplegar el código nuevo**: push a `develop` (dev), luego `main` (pre) y, al final, etiqueta (pro). En cada ambiente
+   el despliegue migra a los clientes existentes a su red propia al actualizar su versión.
+3. **Comprobar el aislamiento** en un ambiente con dos clientes de prueba:
+   ```bash
+   # Desde la API de un cliente NO debe verse el del otro (debe fallar con "Name or service not known")
+   docker exec restify-dev-<clienteA>-api-1 python -c "import socket; socket.gethostbyname('restify-dev-<clienteB>-api-1')"
+   # ...y sí debe ver al panel
+   docker exec restify-dev-<clienteA>-api-1 python -c "import urllib.request; print(urllib.request.urlopen('http://panel:8000/salud').status)"
+   ```
+
+**Pendiente (te toca a ti)**
+- **GitHub → Settings → Branches**: regla para `main` y `develop` que exija PR y tests en verde.
+- **GitHub → Settings → Code security**: Dependabot alerts, Secret scanning y Push protection.
+- **Respaldos fuera del servidor** (S3): quedan para más adelante. Hasta entonces los respaldos solo viven en el VPS.
+- Restar riesgo del agente: tiene acceso a Docker (equivale a root en el servidor). Está acotado a 4 acciones firmadas,
+  pero protege `/srv/restify/*/agente.env` y la llave de CI.
 
 ## Cosas a vigilar
 - **Primer certificado**: tarda 1-2 min. Logs: `docker compose -f /srv/restify/proxy/docker-compose.yml logs caddy`.
 - **No borres el volumen `caddy_data`**: Let's Encrypt limita las emisiones.
-- **Respaldos** (solo pro, diarios 04:00, 7 copias) quedan en `/srv/restify/pro/respaldos`, en el mismo servidor: cópialos fuera.
+- **Respaldos** (solo pro, diarios 04:00, 7 copias) quedan en `/srv/restify/pro/respaldos`, **en el mismo servidor**: súbelos a S3 más adelante.
 - **Banner**: dev y pre muestran una barra fija abajo en landing, panel y en el sistema de cada cliente creado allí. En pro no aparece.
 - **Memoria**: cada ambiente usa ~0.9 GB (panel, su base y landing) más ~1 GB por cliente de prueba.
 - **La llave de CI** entra como `restify`, que solo puede ejecutar el `desplegar.sh` de cada ambiente con sudo. Aun así `restify` pertenece al grupo docker (equivale a root): protege esa llave.

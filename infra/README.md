@@ -38,8 +38,8 @@ instancia** en la suscripción (es seguro repetirlo: no cambia los secretos).
 | Cancelar → Eliminar instancia | `down -v`: borra contenedores **y datos**, y la carpeta de la instancia |
 
 Cada instancia usa como máximo ~960 MB (db 256, api 384, front 256, redis 64) y la base/redis están en una red
-interna sin salida a internet. Las instancias comparten la red `restify-net` con el proxy y el panel, así que en
-el laptop se ven entre sí (en el VPS se aíslan con una red por instancia + proxy).
+interna sin salida a internet. Cada instancia tiene su propia red (`<prefijo>-<cliente>-edge`): solo el proxy y el panel se conectan a ella
+(lo hace el agente con `docker network connect`), así que ninguna instancia ve a otra, ni en el laptop ni en el VPS.
 
 ## Limpiar todo cuando termines
 

@@ -38,7 +38,10 @@ IMAGEN_API = os.environ.get("IMAGEN_API", "restify-api:latest")
 IMAGEN_FRONT = os.environ.get("IMAGEN_FRONT", "restify-front:latest")
 # Varios entornos en un mismo servidor (dev, pre) no pueden chocar: cada uno con su prefijo, su red y sus carpetas
 PREFIJO = os.environ.get("AGENTE_PREFIJO", "restify")
-RED = os.environ.get("AGENTE_RED", "restify-net")
+RED = os.environ.get("AGENTE_RED", "restify-net")  # solo la usan el proxy y el panel; las instancias ya no entran a ella
+# Contenedores que sí pueden ver a TODAS las instancias: el proxy (Caddy) y el panel. Cada instancia tiene su propia red.
+PROXY = os.environ.get("AGENTE_PROXY", "restify-proxy-caddy-1")
+PANEL = os.environ.get("AGENTE_PANEL", "restify-panel-web-1")
 RESPALDOS = Path(os.environ.get("AGENTE_RESPALDOS", Path.home() / ".restify-respaldos")) / PREFIJO
 BANNER = os.environ.get("AGENTE_BANNER", "")  # "DESARROLLO" / "PRE PRODUCCION": el front de cada instancia muestra un banner fijo
 PULL = os.environ.get("AGENTE_PULL", "0") == "1"  # en servidores: las imágenes vienen de un registro (ghcr.io)
@@ -85,6 +88,28 @@ def _exigir(r: subprocess.CompletedProcess, que: str) -> str:
         detalle = (r.stderr or r.stdout or "").strip().splitlines()[-1:] or ["sin detalle"]
         raise ErrorAgente(f"{que} falló: {detalle[0][:300]}", 500)
     return r.stdout
+
+
+# ---------------------------------------------------------------- red propia de cada instancia
+
+def _red_edge(sub: str) -> str:
+    return f"{PREFIJO}-{sub}-edge"
+
+
+def _conectar(sub: str) -> None:
+    """Conecta el proxy y el panel a la red de la instancia (idempotente). Hay que repetirlo si esos contenedores se recrean."""
+    red = _red_edge(sub)
+    for contenedor, alias in ((PROXY, []), (PANEL, ["--alias", "panel"])):
+        r = docker(["network", "connect", *alias, red, contenedor])
+        if r.returncode != 0 and "already exists" not in f"{r.stderr} {r.stdout}":
+            detalle = (r.stderr or r.stdout or "sin detalle").strip().splitlines()[-1][:200]
+            raise ErrorAgente(f"No se pudo conectar {contenedor} a la red de la instancia: {detalle}", 500)
+
+
+def _desconectar(sub: str) -> None:
+    """Antes de borrar la instancia: Docker no elimina una red que aún tiene contenedores ajenos conectados."""
+    for contenedor in (PROXY, PANEL):
+        docker(["network", "disconnect", _red_edge(sub), contenedor])
 
 
 # ---------------------------------------------------------------- plantillas
@@ -140,7 +165,7 @@ services:
     mem_limit: 384m
     logging: *logs
     volumes: [media:/app/media]
-    networks: [interna, restify-net]
+    networks: [interna, edge]
     depends_on:
       db: {{condition: service_healthy}}
       redis: {{condition: service_healthy}}
@@ -150,13 +175,15 @@ services:
     env_file: front.env
     mem_limit: 256m
     logging: *logs
-    networks: [interna, restify-net]
+    networks: [interna, edge]
 
 networks:
   # La base y redis solo se ven entre sí y con la api: sin salida a internet ni al resto de instancias
   interna: {{internal: true}}
-  # Para llegar al proxy (Caddy) y al panel de RESTIFY
-  restify-net: {{external: true, name: {red}}}
+  # Red propia de ESTA instancia. Solo se conectan a ella el proxy (Caddy) y el panel (lo hace el agente con
+  # `docker network connect`): ninguna otra instancia puede alcanzar a esta, ni ella a las demás.
+  edge:
+    name: {proyecto}-edge
 
 volumes:
   pgdata:
@@ -344,6 +371,7 @@ def crear(d: dict) -> dict:
                 **({"BANNER_ENTORNO": BANNER} if BANNER else {}),
             }))
         _exigir(compose(sub, "up", "-d", "front"), "Levantar el front")
+        _conectar(sub)
     return {"estado": "en_linea"}
 
 
@@ -360,7 +388,8 @@ def reanudar(d: dict) -> dict:
     with _candado(sub):
         if not (BASE / sub).exists():
             raise ErrorAgente("La instancia no existe en este servidor", 404)
-        _exigir(compose(sub, "start"), "Reanudar")
+        _exigir(compose(sub, "up", "-d"), "Reanudar")  # `up` y no `start`: aplica también la red y la versión vigentes
+        _conectar(sub)
         _esperar_api(sub)  # "en línea" significa que ya responde, no solo que el contenedor arrancó
     return {"estado": "en_linea"}
 
@@ -369,6 +398,7 @@ def eliminar(d: dict) -> dict:
     sub = validar_sub(d.get("sub"))
     with _candado(sub):
         if (BASE / sub).exists():
+            _desconectar(sub)
             _exigir(compose(sub, "down", "-v", "--remove-orphans"), "Eliminar")
             shutil.rmtree(BASE / sub, ignore_errors=True)
     return {"estado": "eliminada"}
@@ -432,6 +462,7 @@ def actualizar_instancia(sub: str, imagen_api: str | None = None, imagen_front: 
             if PULL:
                 _exigir(compose(sub, "pull", "api", "front", timeout=600), "Descargar imágenes")
             _exigir(compose(sub, "up", "-d", "api", "front"), "Aplicar versión")
+            _conectar(sub)
             _esperar_api(sub)
         except ErrorAgente as e:
             archivo.write_text(anterior)  # vuelta atrás automática
@@ -564,6 +595,8 @@ def cli(argv: list[str]) -> int:
     r.add_argument("--sub")
     r.add_argument("--conservar", type=int, default=7)
     sp.add_parser("listar")
+    c = sp.add_parser("reconectar", help="Reconecta el proxy y el panel a la red de cada instancia (tras recrearlos)")
+    c.add_argument("--sub")
     args = ap.parse_args(argv)
 
     if args.cmd == "listar":
@@ -575,7 +608,10 @@ def cli(argv: list[str]) -> int:
         guardar_imagenes_por_defecto(args.api, args.front)  # las instancias nuevas ya nacen con esta versión
     for sub in subs:
         try:
-            if args.cmd == "respaldar":
+            if args.cmd == "reconectar":
+                _conectar(validar_sub(sub))
+                print(f"[ok] {sub}: conectada")
+            elif args.cmd == "respaldar":
                 print(f"[ok] {sub}: {respaldar_instancia(sub, args.conservar)}")
             else:
                 print(f"[ok] {sub}: {actualizar_instancia(sub, args.api, args.front)['estado']}")
