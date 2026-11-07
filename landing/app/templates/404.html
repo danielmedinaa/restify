@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titulo %}No encontrado · RESTIFY{% endblock %}
+{% block cuerpo %}
+<main id="contenido" class="vacio">
+  <p class="eyebrow">Error 404</p>
+  <h1 class="display">Esta mesa <em>no existe</em>.</h1>
+  <a class="boton boton--claro" href="{{ url_for('landing.inicio') }}">Volver al inicio</a>
+</main>
+{% endblock %}

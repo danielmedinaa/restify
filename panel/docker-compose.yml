@@ -1,0 +1,63 @@
+name: restify-panel
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-panel}
+      POSTGRES_USER: ${POSTGRES_USER:-panel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sin puertos publicados: solo accesible dentro de la red de Docker.
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-panel}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-panel}
+    # Solo en localhost: el panel nunca se publica directo, va detrás del proxy con TLS.
+    ports:
+      - "127.0.0.1:${PANEL_PORT:-8030}:8000"
+    volumes:
+      - instancias:/app/data
+      # Socket del agente (proceso en tu máquina que sí maneja Docker). Ver ../infra/README.md
+      - ./run:/run/agente
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      default: {}
+      # Red compartida con el backend de Restify: la API del backend consulta a http://panel:8000
+      restify-net:
+        aliases: [panel]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  tests:
+    profiles: ["test"]
+    build:
+      context: .
+      args:
+        REQUIREMENTS: requirements-dev.txt
+    environment:
+      PANEL_ENV: test
+    command: ["pytest", "-q"]
+
+networks:
+  restify-net:
+    external: true   # docker network create restify-net
+
+volumes:
+  pgdata:
+  instancias:

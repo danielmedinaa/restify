@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a1819" />
+    <meta name="color-scheme" content="dark" />
+    <title>{% block titulo %}RESTIFY · Sistema para restaurantes{% endblock %}</title>
+    <meta
+      name="description"
+      content="Comandas, cocina en tiempo real, caja multimoneda a tasa BCV, inventario por gramo y menú QR por mesa. El sistema para restaurantes en Venezuela."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="RESTIFY · Tu restaurante, en sincronía" />
+    <meta property="og:description" content="Comandas, cocina, caja e inventario en una sola pantalla." />
+    <meta property="og:image" content="{{ url_for('static', filename='brand/favicon.png', _external=True) }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='brand/favicon-32.png') }}" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='brand/favicon.png') }}" />
+    <link rel="preload" href="{{ url_for('static', filename='fonts/Gagalin-Regular.woff2') }}" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="{{ url_for('static', filename='fonts/GeneralSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />
+    {% if banner_entorno %}<link rel="stylesheet" href="{{ url_for('static', filename='css/entorno.css') }}" />{% endif %}
+    <script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
+  </head>
+  <body{% if banner_entorno %} class="con-banner"{% endif %}>
+    {% if banner_entorno %}<div class="banner-entorno" data-entorno="{{ banner_entorno }}" role="status">{{ banner_entorno }}</div>{% endif %}
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    {% block cuerpo %}{% endblock %}
+    {% if tawk %}
+    <!-- Chat de Tawk.to: se carga desde un archivo propio (la CSP no permite scripts en línea) -->
+    <script src="{{ url_for('static', filename='js/tawk.js') }}" data-propiedad="{{ tawk[0] }}" data-widget="{{ tawk[1] }}" defer></script>
+    {% endif %}
+  </body>
+</html>

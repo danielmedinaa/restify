@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block titulo %}Rol{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>{{ 'Editar rol' if rol else 'Nuevo rol' }}</h1>
+<form method="post" class="tarjeta"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<div class="grid2">{{ campo('nombre','Nombre',rol.nombre if rol else '',errores,requerido=True) }}{{ campo('descripcion','Descripción',rol.descripcion if rol else '',errores) }}</div>
+{% if errores.permisos %}<p class="aviso error">{{ errores.permisos }}</p>{% endif %}
+<table class="matriz"><thead><tr><th>Módulo</th>{% for a in acciones %}<th>{{ a|capitalize }}</th>{% endfor %}</tr></thead><tbody>
+{% for m, n in modulos.items() %}<tr><td>{{ n }}</td>{% for a in acciones %}<td><input type="checkbox" name="{{ m }}.{{ a }}" value="1" aria-label="{{ n }}: {{ a }}"
+ {{ 'checked' if rol and a in rol.permisos.get(m, []) }} {{ 'disabled' if mios is not none and a not in mios.get(m, []) }}></td>{% endfor %}</tr>{% endfor %}</tbody></table>
+<p class="mudo">Solo puedes otorgar los permisos que tú tienes. Al guardar, quienes tengan este rol deberán iniciar sesión de nuevo.</p>
+<button class="boton">Guardar</button></form>{% endblock %}

@@ -1,0 +1,65 @@
+# Un ambiente (dev | pre | pro): panel + su Postgres + landing. El proxy es compartido (deploy/proxy).
+# Los clientes (4 contenedores cada uno) los crea el agente de ESTE ambiente desde su panel.
+# Se opera con deploy/desplegar.sh <entorno>; ENTORNO llega por deploy/.env (lo escribe el script).
+services:
+  panel-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: ../panel/.env     # POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sin puertos publicados: solo visible dentro de la red de este proyecto.
+
+  panel:
+    build: ../panel
+    restart: unless-stopped
+    env_file: ../panel/.env
+    volumes:
+      - instancias:/app/data
+      - ../panel/run:/run/agente   # socket del agente (proceso del servidor que maneja Docker)
+    depends_on:
+      panel-db:
+        condition: service_healthy
+    mem_limit: 384m
+    networks:
+      default: {}
+      # Las instancias consultan su estado en http://panel:8000 (solo dentro de la red de este ambiente)
+      restify-net:
+        aliases: [panel]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  landing:
+    build: ../landing
+    restart: unless-stopped
+    env_file: ../landing/.env
+    environment:
+      LEADS_DB: /app/data/leads.sqlite3
+    volumes:
+      - leads:/app/data
+    mem_limit: 192m
+    networks: [restify-net]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  restify-net:
+    external: true
+    name: restify-${ENTORNO:?Falta ENTORNO (lo define desplegar.sh en deploy/.env)}-net
+
+volumes:
+  pgdata:
+  instancias:
+  leads:

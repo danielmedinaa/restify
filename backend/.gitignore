@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+media/
+# Secretos: cualquier .env menos el ejemplo
+.env
+.env.*
+!.env.example

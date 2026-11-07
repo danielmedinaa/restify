@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block titulo %}Planes{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<div class="barra"><h1>Planes</h1>{% if g.admin.puede('planes','crear') %}<a class="boton" href="{{ url_for('gestion.plan_form') }}">Nuevo plan</a>{% endif %}</div>
+<table><thead><tr><th>Plan</th><th>Precio/mes</th>{% for k, n in LIMITES.items() %}<th>{{ n }}</th>{% endfor %}<th>En uso</th><th></th></tr></thead><tbody>
+{% for p in planes %}<tr class="{{ 'archivado' if not p.activo }}"><td>{{ p.nombre }} {% if not p.activo %}<span class="pill cancelada">archivado</span>{% endif %}</td><td>${{ '%.2f'|format(p.precio_mensual|float) }}</td>
+{% for k in LIMITES %}<td>{{ p[k]|limite }}</td>{% endfor %}<td>{{ usos.get(p.id, 0) }}</td>
+<td class="acciones">{% if g.admin.puede('planes','editar') %}<a href="{{ url_for('gestion.plan_form', id=p.id) }}">Editar</a>{% endif %}
+{% if g.admin.puede('planes','eliminar') %}<form method="post" action="{{ url_for('gestion.plan_archivar', id=p.id) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="enlace">{{ 'Restaurar' if not p.activo else 'Archivar' }}</button></form>{% endif %}</td></tr>{% endfor %}</tbody></table>
+<p class="mudo">Un límite vacío significa ilimitado. Al editar un plan, los cambios aplican de inmediato a todos sus clientes.</p>{% endblock %}

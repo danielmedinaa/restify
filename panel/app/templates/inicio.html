@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block titulo %}Resumen{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>Resumen</h1>
+<div class="tiles">
+  <div class="tile"><small>Clientes</small><strong>{{ total_clientes }}</strong></div>
+  {% for k in ['activa','pausada','suspendida','pendiente'] %}<a class="tile" href="{{ url_for('gestion.suscripciones', estado=k) }}"><small>{{ ESTADOS[k] }}s</small><strong>{{ por_estado.get(k, 0) }}</strong></a>{% endfor %}
+  <div class="tile"><small>Ingreso mensual (activas)</small><strong>${{ '%.2f'|format(mrr|float) }}</strong></div>
+</div>
+{% if con_error %}<h2>Instancias con error</h2><ul class="lista">{% for i in con_error %}<li><a href="{{ url_for('gestion.suscripcion', id=i.suscripcion_id) }}">{{ i.subdominio }}</a> <span class="mudo">{{ i.error_infra }}</span></li>{% endfor %}</ul>{% endif %}
+<h2>Vencen en los próximos 7 días</h2>
+{% if por_vencer %}<table><thead><tr><th>Cliente</th><th>Instancia</th><th>Estado</th><th>Vence</th></tr></thead><tbody>
+{% for s in por_vencer %}<tr><td>{{ s.cliente.nombre }}</td><td><a href="{{ url_for('gestion.suscripcion', id=s.id) }}">{{ s.instancia.subdominio }}</a></td><td>{{ estado(s.estado) }}</td><td class="{{ 'rojo' if s.vence_en < ahora }}">{{ s.vence_en|fecha }}</td></tr>{% endfor %}</tbody></table>
+{% else %}<p class="mudo">Nada por vencer.</p>{% endif %}{% endblock %}

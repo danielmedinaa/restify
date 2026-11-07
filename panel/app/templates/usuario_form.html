@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block titulo %}Administrador{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>{{ 'Editar administrador' if u else 'Nuevo administrador' }}</h1>
+<form method="post" class="tarjeta estrecha"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+{{ campo('nombre','Nombre',d.nombre if d else '',errores,requerido=True) }}
+{{ campo('email','Correo',d.email if d else '',errores,'email',requerido=True) }}
+<label class="campo"><span>Rol</span><select name="rol_id">{% for r in roles %}<option value="{{ r.id }}" {{ 'selected' if u and u.rol_id == r.id }}>{{ r.nombre }}</option>{% endfor %}</select>{% if errores.rol_id %}<em class="err">{{ errores.rol_id }}</em>{% endif %}</label>
+{% if not u %}{{ campo('password','Contraseña temporal','',errores,'password',ayuda='Deberá cambiarla en su primer ingreso y configurar su 2FA.',requerido=True,extra='autocomplete="new-password"') }}
+{% else %}<label class="check"><input type="checkbox" name="activo" value="1" {{ 'checked' if u.activo }}> Activo</label>{% endif %}
+<button class="boton">Guardar</button></form>
+{% if u and g.admin.puede('usuarios','editar') %}<form method="post" action="{{ url_for('admin.usuario_reiniciar', id=u.id) }}" class="tarjeta estrecha peligro-zona"><h2>Reiniciar 2FA</h2><p class="mudo">Si perdió su celular y sus códigos. Cierra sus sesiones.</p>
+<input type="hidden" name="csrf" value="{{ csrf_token() }}"><input type="password" name="confirmar_password" placeholder="Tu contraseña" required autocomplete="current-password"><button class="boton peligro">Reiniciar 2FA</button></form>{% endif %}{% endblock %}

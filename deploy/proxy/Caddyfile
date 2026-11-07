@@ -1,0 +1,88 @@
+# Proxy ÚNICO del servidor para los 3 ambientes. Variables: DOMINIO, ACME_EMAIL, CLOUDFLARE_API_TOKEN
+#   pro: turestify.com        panel.turestify.com        <cliente>.turestify.com
+#   pre: pre.turestify.com    panel.pre.turestify.com    <cliente>.pre.turestify.com
+#   dev: dev.turestify.com    panel.dev.turestify.com    <cliente>.dev.turestify.com
+# Se usan nombres de contenedor completos (restify-<entorno>-...): un alias como "panel" existe en los 3 ambientes.
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+(web) {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+	encode zstd gzip
+}
+
+# {args[0]} = prefijo del ambiente (restify-pro, restify-pre, restify-dev)
+(clientes) {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+	encode zstd gzip
+
+	@inst header_regexp sub Host ^([a-z0-9-]+)\.
+	handle @inst {
+		# Tiempo real directo a la API; todo lo demás (incluidas las fotos y /bff) al front
+		handle /ws/* {
+			reverse_proxy {args[0]}-{re.sub.1}-api-1:8000
+		}
+		handle {
+			reverse_proxy {args[0]}-{re.sub.1}-front-1:3000
+		}
+	}
+	handle {
+		respond "RESTIFY · instancia no encontrada" 404
+	}
+
+	handle_errors {
+		header Content-Type "text/html; charset=utf-8"
+		respond `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width"><title>RESTIFY</title><body style="background:#1a1819;color:#fff;font:16px system-ui;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center"><div><h1>Servicio no disponible</h1><p style="opacity:.7">Esta cuenta está pausada, en mantenimiento o aún se está creando.<br>Si crees que es un error, contacta a RESTIFY.</p></div>` 503
+	}
+}
+
+# ---------------------------------------------------------------- PRODUCCIÓN
+{$DOMINIO}, www.{$DOMINIO} {
+	import web
+	reverse_proxy restify-pro-landing-1:8000
+}
+
+panel.{$DOMINIO} {
+	import web
+	reverse_proxy restify-pro-panel-1:8000
+}
+
+*.{$DOMINIO} {
+	import clientes restify-pro
+}
+
+# ---------------------------------------------------------------- PRE
+pre.{$DOMINIO} {
+	import web
+	reverse_proxy restify-pre-landing-1:8000
+}
+
+panel.pre.{$DOMINIO} {
+	import web
+	reverse_proxy restify-pre-panel-1:8000
+}
+
+*.pre.{$DOMINIO} {
+	import clientes restify-pre
+}
+
+# ---------------------------------------------------------------- DEV
+dev.{$DOMINIO} {
+	import web
+	reverse_proxy restify-dev-landing-1:8000
+}
+
+panel.dev.{$DOMINIO} {
+	import web
+	reverse_proxy restify-dev-panel-1:8000
+}
+
+*.dev.{$DOMINIO} {
+	import clientes restify-dev
+}

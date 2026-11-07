@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block titulo %}Ingresar{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block solo %}<form method="post" class="tarjeta estrecha">
+  <h1>Panel RESTIFY</h1><p class="sub">Acceso restringido.</p>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  {% if error %}<p class="aviso error">{{ error }}</p>{% endif %}
+  {{ campo('email','Correo',email,{},'email',requerido=True,extra='autocomplete="username" autofocus') }}
+  {{ campo('password','Contraseña','',{},'password',requerido=True,extra='autocomplete="current-password"') }}
+  <button class="boton">Continuar</button>
+</form>{% endblock %}

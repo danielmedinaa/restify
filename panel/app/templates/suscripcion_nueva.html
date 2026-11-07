@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block titulo %}Nueva suscripción{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>Nueva instancia para {{ c.nombre }}</h1>
+<form method="post" class="tarjeta estrecha"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<label class="campo"><span>Plan</span><select name="plan_id" required>{% for p in planes %}<option value="{{ p.id }}">{{ p.nombre }} — ${{ '%.2f'|format(p.precio_mensual|float) }}/mes</option>{% endfor %}</select>
+{% if errores.plan_id %}<em class="err">{{ errores.plan_id }}</em>{% endif %}</label>
+{{ campo('subdominio','Subdominio',sub,errores,requerido=True,ayuda='Quedará como <subdominio>.' ~ base,extra='maxlength="32" pattern="[a-z0-9-]{3,32}" autocomplete="off"') }}
+<button class="boton">Crear y activar</button></form>{% endblock %}

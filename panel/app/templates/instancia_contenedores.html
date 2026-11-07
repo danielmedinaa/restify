@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block titulo %}Contenedores · {{ s.instancia.subdominio }}{% endblock %}
+{% block contenido %}{% set i = s.instancia %}
+<div class="barra"><div><h1>Contenedores</h1><p class="mudo"><a href="{{ url_for('gestion.suscripcion', id=s.id) }}">{{ i.subdominio }}</a> · {{ s.cliente.nombre }}</p></div>
+<a class="boton sec" href="{{ url_for('gestion.instancia_contenedores', id=s.id, servicio=servicio, lineas=lineas) }}">Actualizar</a></div>
+
+<section class="tarjeta"><h2>Estado</h2>
+{% if error %}<p class="mudo">{{ error }}</p>
+{% elif not contenedores %}<p class="mudo">Esta instancia no tiene contenedores en el servidor.</p>
+{% else %}
+<table><thead><tr><th>Servicio</th><th>Contenedor</th><th>Estado</th><th>Detalle</th><th>Imagen</th><th></th></tr></thead><tbody>
+{% for c in contenedores %}<tr><td><strong>{{ c.servicio }}</strong></td><td><code>{{ c.nombre }}</code></td>
+<td><span class="pill {{ 'activa' if c.estado == 'running' else 'pausada' }}">{{ c.estado }}</span></td><td>{{ c.detalle }}</td><td><code>{{ c.imagen }}</code></td>
+<td><a class="boton sec" href="{{ url_for('gestion.instancia_contenedores', id=s.id, servicio=c.servicio, lineas=lineas) }}">Ver logs</a></td></tr>{% endfor %}</tbody></table>{% endif %}</section>
+
+{% if servicio %}
+<section class="tarjeta"><h2>Logs de {{ servicio }}</h2>
+<form method="get" class="en-linea"><input type="hidden" name="servicio" value="{{ servicio }}">
+  <select name="lineas">{% for n in (100, 200, 500, 1000) %}<option value="{{ n }}" {{ 'selected' if n == lineas }}>Últimas {{ n }} líneas</option>{% endfor %}</select>
+  <button class="boton sec">Recargar</button></form>
+{% if log_error %}<p class="mudo">{{ log_error }}</p>
+{% else %}<pre style="max-height:60vh;overflow:auto;white-space:pre-wrap;word-break:break-all;font-size:.8rem">{{ logs or '(sin salida)' }}</pre>{% endif %}
+<p class="mudo">Los logs pueden contener datos del cliente. Cada consulta queda en la auditoría.</p></section>
+{% endif %}
+{% endblock %}

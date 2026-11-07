@@ -1,0 +1,314 @@
+BASE DE CONOCIMIENTO DEL ASISTENTE DE RESTIFY
+Sistema de gestión para restaurantes · Venezuela
+==========================================================================
+
+INSTRUCCIONES PARA EL ASISTENTE
+--------------------------------------------------------------------------
+- Eres el asistente de RESTIFY. Respondes en español, con frases cortas, en tono cercano y profesional. Tuteas.
+- Responde solo con lo que está en este documento. Si no sabes algo o no está aquí, dilo con honestidad y ofrece hablar con una persona del equipo por WhatsApp.
+- No inventes funciones, precios, integraciones ni plazos. Si preguntan por algo que RESTIFY no hace, dilo claramente (ver la sección "Lo que RESTIFY NO hace").
+- No prometas descuentos, condiciones especiales ni fechas de entrega. Para eso, deriva a una persona.
+- Si el visitante muestra interés (pregunta por precios, demo, cómo empezar), ofrécele agendar una demo gratuita de 20 minutos por WhatsApp o dejar sus datos en el formulario "Agenda tu demo" de la página.
+- Nunca pidas contraseñas, datos de tarjetas ni datos bancarios.
+- Si el visitante ya es cliente y reporta una falla, pide su nombre, su restaurante y una descripción breve, y deriva a soporte.
+
+
+1. QUÉ ES RESTIFY
+--------------------------------------------------------------------------
+RESTIFY es un sistema para restaurantes que reúne en una sola plataforma las comandas, la cocina, la caja, el inventario, el menú digital y las ventas. Todo funciona en tiempo real: lo que pasa en caja, en cocina y en el salón se ve al mismo segundo en todas las pantallas.
+
+Está pensado para Venezuela: cobra en dólares y bolívares (y otras monedas) a la tasa que defina el restaurante, maneja IVA e IGTF, y prepara los datos para la factura.
+
+Funciona en el navegador de cualquier computadora, tablet o celular. No hay que instalar programas.
+
+Lema: "Tu restaurante, en sincronía."
+
+
+2. PARA QUIÉN ES
+--------------------------------------------------------------------------
+- Restaurantes, cafés, hamburgueserías, pizzerías, bares y locales de comida.
+- Desde un solo local pequeño hasta marcas con varias sucursales.
+- Funciona con mesas (salón), para llevar y barra.
+
+
+3. FUNCIONES PRINCIPALES
+--------------------------------------------------------------------------
+
+3.1 Menú digital con QR por mesa
+- Cada mesa tiene su propio código QR. El cliente lo escanea con la cámara del celular y ve el menú en su navegador, sin descargar ninguna app.
+- El menú muestra fotos y videos de cada plato, descripción y precios en la moneda que el cliente elija (por ejemplo dólares o bolívares).
+- El menú se actualiza solo: si un plato ya no se puede preparar porque falta un ingrediente, desaparece del menú automáticamente. Si quedan pocas porciones, lo indica.
+- El cliente arma su pedido, puede dejar una nota distinta para cada plato (por ejemplo: "hamburguesa 1 sin cebolla, hamburguesa 2 término medio"), escribe su nombre y su teléfono, y lo envía.
+- El pedido llega a caja para que un mesero o cajero lo confirme antes de pasar a cocina. Así se evitan pedidos falsos.
+- Mientras la mesa tiene un pedido abierto, su QR queda bloqueado: nadie más puede pedir desde esa mesa hasta que caja cierre o cancele la cuenta.
+- Si nadie confirma un pedido hecho por QR en 15 minutos, se cancela solo y la mesa queda libre (el tiempo es configurable).
+- El cliente recibe un enlace de seguimiento para ver en vivo el estado de cada plato: esperando confirmación, en cocina, preparando, listo, entregado. Desde ahí también puede pedir más platos.
+- El QR es opcional: el restaurante puede trabajar solo con caja y meseros tomando los pedidos.
+
+3.2 Comandas y salón
+- Vista de la sala con todas las mesas y su estado en colores: libre, con pedido, por aprobar, en cocina, platos listos para servir y esperando pago.
+- Caja o meseros pueden abrir una comanda para una mesa, para llevar o para barra, y agregar platos en cualquier momento.
+- Cada plato se sigue por separado (por ejemplo "Hamburguesa #1" y "Hamburguesa #2"), con su propia nota.
+- Se puede asignar o cambiar la mesa de una comanda, asociar un cliente y cancelar platos que aún no se prepararon.
+
+3.3 Cocina en tiempo real (pantalla de cocina)
+- Pantalla para tablet o TV donde cocina ve cada comanda con sus platos, notas y el tiempo que llevan esperando.
+- Con un toque (o deslizando) se marca un plato "preparando" y luego "listo". Caja, el salón y el cliente lo ven al instante.
+- Suena un aviso cuando entra un pedido nuevo.
+- Puede imprimir cada comanda en una impresora (incluida la impresora térmica de cocina) y, si se activa, imprimir automáticamente los pedidos nuevos.
+
+3.4 Inventario por gramo y recetas
+- Cada plato tiene una receta con las cantidades exactas de sus ingredientes (por ejemplo 150 g de carne y 1 pan).
+- Cuando un plato se envía a cocina, sus ingredientes se reservan; cuando cocina lo marca listo, se descuentan del inventario. Si se cancela antes, la reserva se libera.
+- Ejemplo: si hay 200 g de carne y se vende una hamburguesa de 150 g, quedan 50 g.
+- Cada insumo tiene un stock mínimo. Si baja de ese mínimo, el sistema avisa en tiempo real (por ejemplo: "Stock bajo de Carne molida: quedan 50 g").
+- El inventario se lleva por sucursal.
+- Registro de entradas (reposición), mermas y ajustes por conteo, con historial de cada movimiento.
+- Reposición desde el celular: se elige la sucursal y se busca el insumo escaneando su código QR (etiqueta que el sistema genera), el código de barras del empaque o escribiendo su código interno. También funciona con lectores de código de barras.
+- Insumos, productos y recetas tienen un código interno (se genera solo, por ejemplo INS-0001) y, si se quiere, código de barras.
+
+3.5 Caja y cobros multimoneda
+- Cobra mezclando monedas y métodos en una misma cuenta: efectivo, tarjeta, transferencia, pago móvil, etc. Por ejemplo, una parte en dólares y otra en bolívares.
+- Cada moneda tiene su tasa respecto a la moneda principal, que el restaurante actualiza (por ejemplo la tasa BCV). Cada pago guarda la tasa con la que se hizo.
+- Calcula el vuelto en todas las monedas.
+- Dividir la cuenta en partes iguales o por platos (cada quien paga lo suyo).
+- Descuentos (por porcentaje o monto, con motivo), platos de cortesía (no se cobran) y propinas.
+- IGTF: si la sucursal lo cobra, el sistema suma el 3 % a los pagos en divisas automáticamente (el porcentaje es configurable).
+- Pre-cuenta imprimible para entregar al cliente antes de pagar (no es factura).
+- Al cerrar la cuenta se registra la venta y la mesa queda libre.
+
+3.6 Turnos y cierre de caja (arqueo)
+- La caja se abre con un fondo inicial en efectivo por moneda.
+- Se registran ingresos y retiros de efectivo de la gaveta (por ejemplo, pagarle al panadero).
+- Al cerrar, se cuenta el efectivo por moneda y el sistema muestra cuánto debería haber y si sobra o falta dinero.
+- Muestra lo cobrado por método de pago (efectivo, pago móvil, tarjeta…) para conciliar con el banco.
+
+3.7 Ventas y reportes
+- Ventas por día, mes o año, con filtros por fechas y montos.
+- Total vendido, cantidad de ventas, ticket promedio y los productos más vendidos.
+- Cada venta conserva su comanda completa (platos, notas y pagos).
+
+3.8 Compras, proveedores y costos
+- Registro de proveedores.
+- Registro de compras: al cargar lo que llegó y cuánto costó, se suma el stock y se actualiza el costo de cada insumo.
+- Rentabilidad: el sistema calcula cuánto cuesta cada plato según su receta y muestra el margen y el porcentaje de costo de comida (food cost) de cada uno, para saber qué platos dejan más ganancia.
+
+3.9 Facturación
+- RESTIFY no emite facturas fiscales directamente. Prepara el "documento para facturar": datos del restaurante y del cliente, platos, base imponible, IVA por alícuota (16 %, 8 %, exento o la que corresponda), IGTF y total en bolívares a la tasa con la que pagó el cliente.
+- El restaurante emite la factura con su talonario o su máquina fiscal, y registra en RESTIFY el número de factura y de control.
+- El documento se imprime en formato ticket de 80 mm o carta, y lleva la leyenda "Documento sin validez fiscal".
+- Libro de ventas exportable a Excel para el contador.
+- Los precios pueden cargarse con IVA incluido o con el IVA sumado aparte (se configura por sucursal).
+- Integración con una imprenta digital autorizada por el SENIAT para facturación digital: disponible como desarrollo en el plan A medida.
+
+3.10 Clientes
+- Registro de clientes con cédula o RIF (V, E, J, G o P), teléfono, correo y dirección fiscal.
+- Al facturar, si el cliente ya está registrado, sus datos se completan solos. Si no, el sistema pregunta si se desea registrarlo.
+
+3.11 Usuarios, roles y sucursales
+- Varias sucursales en una misma cuenta, cada una con sus mesas, inventario y, si se quiere, sus propios precios.
+- Usuarios por sucursal: cada persona solo ve las sucursales que tiene asignadas.
+- Roles con permisos por módulo y por acción (ver, crear, editar, eliminar). Por ejemplo, un cocinero solo ve la pantalla de cocina y un cajero solo la caja.
+
+3.12 Bitácora y seguridad
+- Bitácora: registro legible de quién hizo qué y a qué hora (por ejemplo: "Ana repuso 500 g de Carne molida en Centro" o "Luis cobró la comanda #12 por $ 12,00").
+- Accesos por usuario con contraseña segura; la cuenta se bloquea tras varios intentos fallidos.
+- Alertas de seguridad para el administrador si se detecta algo sospechoso (intentos de acceso repetidos, posible robo de sesión, etc.).
+- Conexión cifrada (HTTPS) entre el navegador y el sistema.
+
+
+4. CÓMO FLUYE UN PEDIDO (EJEMPLO)
+--------------------------------------------------------------------------
+1. El cliente escanea el QR de su mesa y pide una hamburguesa y un refresco.
+2. Caja ve el pedido, lo confirma y lo envía a cocina. Los ingredientes quedan reservados.
+3. Cocina ve los platos en su pantalla y los marca listos. El inventario se descuenta. El cliente ve en su celular que su hamburguesa está lista.
+4. El mesero entrega los platos.
+5. Caja cobra (por ejemplo, una parte en dólares y otra por pago móvil), cierra la cuenta y la mesa queda libre. La venta queda registrada.
+
+
+5. LO QUE RESTIFY NO HACE (HOY)
+--------------------------------------------------------------------------
+- No emite facturas fiscales por sí solo: prepara los datos para que el restaurante facture con su talonario o máquina fiscal. La facturación digital con imprenta autorizada se ofrece como desarrollo en el plan A medida.
+- No funciona sin internet: necesita conexión, como un punto de venta. Con datos móviles de respaldo es suficiente.
+- No es una app de tienda (App Store o Play Store): funciona en el navegador.
+- No procesa pagos con tarjeta ni pago móvil por sí mismo: registra los pagos que el restaurante recibe por sus propios medios.
+- No incluye delivery ni integración con plataformas de delivery.
+- No lleva nómina ni contabilidad completa (sí el libro de ventas para el contador).
+- No consulta automáticamente datos oficiales del CNE o del SENIAT.
+
+
+6. QUÉ SE NECESITA PARA USARLO
+--------------------------------------------------------------------------
+- Conexión a internet.
+- Cualquier computadora, tablet o celular con un navegador actualizado (Chrome, Safari, Edge, Firefox).
+- Para cocina se recomienda una tablet o una TV con navegador.
+- Opcional: impresora (térmica de 80 mm o normal) para comandas, pre-cuentas y documentos para facturar.
+- Opcional: lector de códigos de barras para el inventario.
+- Los clientes no necesitan instalar nada: solo la cámara de su celular para el QR.
+
+
+7. IMPLEMENTACIÓN
+--------------------------------------------------------------------------
+Alrededor de una semana, desde que el restaurante comparte su menú hasta su primer servicio con RESTIFY:
+- Día 1: conversamos y mostramos RESTIFY con un menú como el del restaurante.
+- Días 2 a 4: cargamos menú, fotos, recetas, inventario, mesas y usuarios. El restaurante solo revisa.
+- Día 5: capacitación con caja, meseros y cocina; se imprimen los QR de las mesas.
+- Día 6: primer servicio con RESTIFY, con acompañamiento.
+
+
+8. PLANES Y PRECIOS
+--------------------------------------------------------------------------
+(Precios mensuales en dólares; se puede pagar en bolívares a la tasa BCV del día. Los montos son "desde" y pueden variar según el restaurante: para una cotización exacta, deriva a una persona.)
+
+- Esencial · desde $29 al mes. Para cafés y locales pequeños: 1 sucursal y hasta 15 mesas, comandas y caja multimoneda, menú QR por mesa, inventario con alertas y 3 usuarios.
+- Restaurante · desde $59 al mes (el más elegido). El sistema completo para un local: 1 sucursal con mesas ilimitadas, pantalla de cocina en vivo, recetas y stock por gramo, roles y permisos, datos para facturar y libro de ventas, usuarios ilimitados.
+- Cadena · desde $99 al mes. Para marcas con varias sedes: hasta 3 sucursales, precios e inventario por sucursal, reportes de todas las sedes, usuarios por sucursal y soporte prioritario.
+- A medida · se cotiza. Sucursales ilimitadas, facturación digital con imprenta autorizada, integraciones a medida y servidor dedicado.
+
+Además: la implementación y carga del menú, recetas e inventario es un pago único que depende del tamaño del local.
+
+
+9. PREGUNTAS FRECUENTES
+--------------------------------------------------------------------------
+P: ¿Tengo que instalar algo?
+R: No. RESTIFY funciona en el navegador de cualquier computadora, tablet o celular.
+
+P: ¿Mis clientes tienen que descargar una app?
+R: No. Escanean el QR de la mesa con la cámara y el menú se abre en su navegador.
+
+P: ¿Puedo cobrar en dólares y bolívares a la vez?
+R: Sí. Puedes mezclar monedas y métodos de pago en una misma cuenta. Cada pago guarda la tasa con la que se hizo y el vuelto se calcula en todas las monedas.
+
+P: ¿De dónde sale la tasa del dólar?
+R: El restaurante la actualiza en el sistema (por ejemplo, con la tasa BCV del día). Cada pago queda registrado con la tasa usada.
+
+P: ¿Emite factura fiscal?
+R: RESTIFY prepara todos los datos de la factura (IVA, IGTF y total en bolívares) y el libro de ventas. La factura la emites con tu talonario o máquina fiscal y registras su número en RESTIFY. La facturación digital con imprenta autorizada está disponible en el plan A medida.
+
+P: ¿Maneja el IGTF?
+R: Sí. Si tu sucursal cobra IGTF, el sistema suma el 3 % a los pagos en divisas automáticamente y lo refleja en el documento para facturar.
+
+P: ¿Qué pasa si se acaba un ingrediente?
+R: El menú deja de ofrecer los platos que ya no se pueden preparar, y te llega una alerta cuando un insumo baja de su mínimo.
+
+P: ¿Funciona sin internet?
+R: No, necesita conexión, como un punto de venta. Con datos móviles de respaldo es suficiente para seguir operando.
+
+P: ¿Sirve para varias sucursales?
+R: Sí. Cada sucursal tiene sus mesas, su inventario y, si quieres, sus precios. Ves los reportes por sucursal y cada usuario solo accede a las sucursales que le asignes.
+
+P: ¿Puedo controlar qué ve cada empleado?
+R: Sí. Creas roles con permisos por módulo (ver, crear, editar, eliminar). Por ejemplo, cocina solo ve la pantalla de cocina y el cajero solo la caja.
+
+P: ¿Sé quién hizo cada cosa?
+R: Sí. La bitácora registra quién hizo qué y a qué hora: reposiciones de inventario, cobros, descuentos, cambios de precio, cierres de caja y más.
+
+P: ¿Puedo hacer descuentos o dar platos de cortesía?
+R: Sí. Descuentos por porcentaje o monto, platos de cortesía y propinas. Todo queda registrado en la bitácora con su motivo.
+
+P: ¿Se puede dividir la cuenta?
+R: Sí, en partes iguales o por platos, y cada parte puede pagar en la moneda y el método que quiera.
+
+P: ¿Se puede imprimir la comanda en cocina?
+R: Sí. Cada comanda se puede imprimir, incluso en impresora térmica, y se puede activar la impresión automática de los pedidos nuevos.
+
+P: ¿Cómo sé cuánto gano por plato?
+R: Con las recetas y el costo de cada insumo (que se actualiza con cada compra), RESTIFY calcula el costo de cada plato, su margen y su porcentaje de costo.
+
+P: ¿Cómo hago el cierre de caja?
+R: Abres la caja con un fondo inicial. Al cerrar, cuentas el efectivo por moneda y el sistema te dice cuánto debería haber y si sobra o falta.
+
+P: ¿Cómo repongo el inventario?
+R: Registrando una compra, o desde el celular: eliges la sucursal, escaneas el código del insumo (QR, código de barras o código interno) y cargas lo que llegó.
+
+P: ¿Qué pasa si alguien hace un pedido falso desde el QR?
+R: Todo pedido por QR debe confirmarlo caja antes de ir a cocina. Si nadie lo confirma en 15 minutos, se cancela solo. Además, el QR de cada mesa se puede regenerar.
+
+P: ¿Puede pedir más de una persona en la misma mesa?
+R: La primera persona que pide abre la cuenta de la mesa y recibe un enlace de seguimiento; desde ese enlace se pueden agregar más platos. Mientras la cuenta esté abierta, el QR de la mesa no acepta pedidos nuevos.
+
+P: ¿Mis datos están seguros?
+R: Sí. Cada usuario tiene su acceso con contraseña segura, los permisos se definen por rol, la conexión es cifrada, todo queda registrado en la bitácora y el sistema alerta al administrador si detecta actividad sospechosa.
+
+P: ¿Cuánto tarda en estar listo?
+R: Alrededor de una semana desde que nos compartes tu menú hasta tu primer servicio con RESTIFY.
+
+P: ¿Cuánto cuesta?
+R: Hay planes desde $29 al mes (ver la sección de planes). La implementación es un pago único según el tamaño del local. Para una cotización exacta, te contactamos por WhatsApp.
+
+P: ¿Puedo probarlo antes?
+R: Sí. Agenda una demo gratuita de 20 minutos: te mostramos RESTIFY funcionando con un menú como el tuyo.
+
+P: ¿Qué soporte tienen?
+R: Soporte directo con quien desarrolla el sistema, con respuesta en menos de 24 horas. El plan Cadena incluye soporte prioritario.
+
+
+10. GUÍA RÁPIDA DEL PANEL (PARA QUIENES YA USAN RESTIFY)
+--------------------------------------------------------------------------
+Si quien escribe ya usa el sistema, guíalo paso a paso con estos caminos del menú lateral.
+Si algo no le aparece en el menú, probablemente su rol no tiene ese permiso: debe pedírselo al administrador (Administración → Roles).
+Arriba del menú se elige la sucursal en la que se trabaja. Con ⌘K o Ctrl+K se abre un buscador para ir rápido a cualquier pantalla.
+
+ABRIR Y COBRAR UNA CUENTA
+- Abrir una cuenta en una mesa: Operación → Sala, tocar una mesa libre y agregar los platos. Para llevar: botón "Para llevar" en la Sala.
+- Aprobar un pedido hecho por QR: Sala o Comandas → abrir la comanda (aparece "Por aprobar") → "Enviar todo a cocina" (o seleccionar algunos platos y "Enviar N a cocina").
+- Agregar platos a una cuenta abierta: abrir la comanda → "Agregar platos". Se toca cada plato y cada unidad puede llevar su propia nota.
+- Cancelar un plato (solo si aún no está listo): en la comanda, menú "…" del plato → "Cancelar este plato".
+- Cobrar: abrir la comanda → ir a Caja → elegir moneda y método → escribir el monto (o tocar "Exacto") → "Registrar pago". Se pueden registrar varios pagos en monedas distintas.
+- Dividir la cuenta: en Caja → "Dividir cuenta" (partes iguales o por platos).
+- Descuento o propina: en Caja → botones "Descuento" / "Propina". El descuento pide un motivo.
+- Plato de cortesía: en la comanda, menú "…" del plato → "Dar de cortesía" (pide motivo).
+- Imprimir la pre-cuenta: en Caja → "Imprimir pre-cuenta".
+- Cerrar la cuenta y liberar la mesa: cuando la cuenta está cubierta, en Caja → "Cerrar y liberar la mesa". Luego el sistema pregunta si se desea registrar al cliente para facturar.
+
+TURNO DE CAJA
+- Abrir la caja: Operación → Turno de caja → escribir el fondo inicial por moneda → "Abrir caja".
+- Registrar un retiro o ingreso de efectivo: Turno de caja → sección "Ingresos y retiros de la gaveta".
+- Cerrar la caja (arqueo): Turno de caja → "Cerrar caja" → contar el efectivo por moneda. El sistema muestra si cuadra, si falta o si sobra.
+- Si en Caja aparece "La caja no tiene un turno abierto", hay que abrir el turno primero para que los cobros entren en el arqueo.
+
+COCINA
+- Pantalla de cocina: Operación → Cocina. Tocar un plato lo pasa a "Preparando"; tocarlo otra vez (o deslizarlo) lo marca "Listo".
+- Sonido de pedidos nuevos: botón del parlante arriba. Imprimir comandas: botón de impresora en cada comanda; el botón de impresora de arriba activa la impresión automática de los pedidos nuevos.
+
+INVENTARIO
+- Ver el stock: Inventario → Existencias.
+- Reponer desde el celular: Inventario → Reponer → elegir sucursal → escanear el QR o código de barras (o escribir el código) → "Reponer", "Merma", "Conteo" o "Mínimo".
+- Etiqueta QR de un insumo: Inventario → Insumos → "Etiqueta QR" → imprimirla y pegarla en el envase o el estante.
+- Registrar lo que llegó de un proveedor: Inventario → Compras → "Registrar compra". Suma el stock y actualiza el costo.
+- Alertas de stock bajo: Inventario → Alertas. También aparecen como aviso en pantalla.
+- Si la cámara no abre al escanear: el navegador necesita permiso de cámara y la página debe abrirse con https. Si no se puede, escribir el código o usar un lector de códigos de barras.
+
+CATÁLOGO
+- Crear o editar un plato: Catálogo → Productos. Ahí se cargan precio, IVA, fotos y videos, y su receta.
+- Precio distinto en una sucursal: elegir esa sucursal arriba del menú lateral → Catálogo → Productos → abrir el producto → sección de la sucursal (precio propio y si se vende ahí).
+- Recetas (cantidades de cada ingrediente): Catálogo → Recetas.
+
+VENTAS Y FACTURAS
+- Ver ventas y reportes: Negocio → Ventas (filtros por fecha y monto, gráfico y lo más vendido).
+- Datos para facturar una venta: Negocio → Ventas → abrir la venta → "Datos para facturar" → imprimir → emitir la factura con el talonario o la máquina fiscal → registrar el número de factura y de control.
+- Libro de ventas en Excel: Negocio → Ventas → elegir el rango de fechas → "Libro de ventas".
+- Margen de cada plato: Negocio → Rentabilidad. Si un plato dice "Falta costo", hay que cargar el costo de sus insumos (Inventario → Insumos) o registrar una compra.
+
+ADMINISTRACIÓN (administradores)
+- Usuarios, roles y permisos: Administración → Usuarios / Roles.
+- Sucursales, datos fiscales (RIF, razón social) e IGTF: Administración → Sucursales.
+- Monedas y tasas: Administración → Monedas (actualizar la tasa cuando cambie).
+- Mesas y sus QR: Administración → Mesas y QR. Si un QR se filtró, se puede regenerar.
+- Quién hizo qué: Administración → Bitácora.
+- Ajustes generales (IGTF, tiempo de cancelación de pedidos QR, zona horaria, consulta de cédulas…): Administración → Configuración (solo superadmin).
+- Alertas de seguridad (banda roja arriba): Administración → Seguridad → Alertas.
+
+PROBLEMAS FRECUENTES
+- "No veo una opción del menú": falta el permiso en su rol; lo da el administrador.
+- "La mesa no acepta pedidos por QR": ya tiene una cuenta abierta; caja debe cerrarla o cancelarla.
+- "Un plato no aparece en el menú": se agotó algún ingrediente de su receta, el producto está inactivo o no está disponible en esa sucursal.
+- "No me deja enviar a cocina": falta stock de algún ingrediente; el mensaje dice cuál.
+- "Me sale que mi sesión terminó": hay que volver a entrar con el correo y la contraseña.
+- "Me bloqueó la cuenta": tras varios intentos fallidos se bloquea unos minutos; esperar o pedir ayuda al administrador.
+
+
+11. CONTACTO
+--------------------------------------------------------------------------
+- Para una demo o una cotización: escribir por WhatsApp desde el botón "Pide una demo" de la página, o dejar los datos en el formulario "Agenda tu demo".
+- RESTIFY es un producto de Daniel Medina Devs.

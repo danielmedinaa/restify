@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block titulo %}Configurar 2FA{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block solo %}<form method="post" class="tarjeta estrecha">
+  <h1>Configura tu 2FA</h1>
+  <p class="sub">Es obligatorio. Escanea el QR con Google Authenticator, Aegis, 1Password o similar y escribe el código que muestra.</p>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <img class="qr" src="{{ qr }}" alt="Código QR para la app autenticadora" width="220" height="220">
+  <p class="sub">¿No puedes escanear? Clave manual: <code>{{ secreto }}</code></p>
+  {% if error %}<p class="aviso error">{{ error }}</p>{% endif %}
+  {{ campo('codigo','Código de 6 dígitos','',{},'text',requerido=True,extra='inputmode="numeric" autocomplete="one-time-code" maxlength="7"') }}
+  <button class="boton">Activar y continuar</button>
+</form>{% endblock %}

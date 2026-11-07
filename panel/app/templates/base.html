@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>{% block titulo %}Panel{% endblock %} · RESTIFY</title>
+<link rel="icon" href="{{ url_for('static', filename='brand/favicon.png') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/panel.css') }}">
+{% if BANNER_ENTORNO %}<link rel="stylesheet" href="{{ url_for('static', filename='css/entorno.css') }}">{% endif %}
+</head>
+<body{% if BANNER_ENTORNO %} class="con-banner"{% endif %}>
+{% if BANNER_ENTORNO %}<div class="banner-entorno" data-entorno="{{ BANNER_ENTORNO }}" role="status">{{ BANNER_ENTORNO }}</div>{% endif %}
+
+{% if g.admin %}
+<div class="shell">
+  <aside class="lateral">
+    <a class="marca" href="{{ url_for('gestion.inicio') }}"><img src="{{ url_for('static', filename='brand/favicon.png') }}" alt="" width="26" height="26"> RESTIFY <small>panel</small></a>
+    <nav>
+      {% set nav = [('gestion.inicio','Resumen',None), ('gestion.clientes','Clientes','clientes'), ('gestion.suscripciones','Suscripciones','suscripciones'),
+                    ('gestion.planes','Planes','planes'), ('admin.usuarios','Administradores','usuarios'), ('admin.roles','Roles','roles'), ('admin.bitacora','Auditoría','auditoria')] %}
+      {% for ep, txt, mod in nav %}{% if not mod or g.admin.puede(mod, 'leer') %}
+        <a href="{{ url_for(ep) }}" {% if request.endpoint == ep %}aria-current="page"{% endif %}>{{ txt }}</a>
+      {% endif %}{% endfor %}
+    </nav>
+    <div class="yo">
+      <strong>{{ g.admin.nombre }}</strong><small>{{ g.admin.rol.nombre }}</small>
+      <a href="{{ url_for('cuenta.password') }}">Mi cuenta</a>
+      <form method="post" action="{{ url_for('auth.salir') }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="enlace">Cerrar sesión</button></form>
+    </div>
+  </aside>
+  <main class="contenido">
+    {% with mensajes = get_flashed_messages(with_categories=true) %}{% for cat, m in mensajes %}<p class="aviso {{ cat }}" role="status">{{ m }}</p>{% endfor %}{% endwith %}
+    {% block contenido %}{% endblock %}
+  </main>
+</div>
+{% else %}
+<main class="solo">{% block solo %}{% endblock %}</main>
+{% endif %}
+</body>
+</html>

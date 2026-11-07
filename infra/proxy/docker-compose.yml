@@ -1,0 +1,20 @@
+name: restify-proxy
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    # Solo tu máquina: http://<cliente>.restify.localhost:8088 (PROXY_PORT)
+    ports:
+      - "127.0.0.1:${PROXY_PORT:-8088}:8080"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]   # el binario de Caddy lo exige para arrancar
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 64m
+    networks: [restify-net]
+
+networks:
+  restify-net:
+    external: true   # docker network create restify-net

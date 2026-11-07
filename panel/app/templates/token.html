@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block titulo %}Token de la instancia{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>{{ 'Instancia creada' if nuevo else 'Token rotado' }}</h1>
+<section class="tarjeta"><p>Instancia: <strong>{{ url }}</strong></p>
+<p>Este token es la llave de la instancia: el cliente lo escribe en la pantalla <strong>«Configuración inicial»</strong> la primera vez que abre su sistema, y con él la instancia consulta su estado y sus límites. <strong>Se muestra una sola vez</strong>; en el panel solo queda su hash. Entrégaselo por un canal seguro.</p>
+<pre class="token">{{ token }}</pre>
+<p class="mudo">Si lo pierdes o se filtra, rótalo desde la suscripción (solo sirve mientras la instancia no se haya configurado, o si la reconfiguras).</p>
+<a class="boton" href="{{ url_for('gestion.suscripcion', id=s.id) }}">Ir a la suscripción</a></section>{% endblock %}

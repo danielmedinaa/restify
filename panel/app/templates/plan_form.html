@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block titulo %}Plan{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>{{ 'Editar plan' if plan else 'Nuevo plan' }}</h1>
+{% if plan and plan.suscripciones %}<p class="aviso">{{ plan.suscripciones|length }} suscripción(es) usan este plan: los cambios les aplican ya.</p>{% endif %}
+<form method="post" class="tarjeta"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<div class="grid2">
+{{ campo('nombre','Nombre',p.nombre if p else '',errores,requerido=True) }}
+{{ campo('precio_mensual','Precio mensual (USD)',p.precio_mensual if p else '0',errores,'text',extra='inputmode="decimal"') }}
+</div>
+{{ campo('descripcion','Descripción',p.descripcion if p else '',errores) }}
+<h2>Límites <small class="mudo">(vacío = ilimitado)</small></h2>
+<div class="grid3">{% for k, n in LIMITES.items() %}{{ campo(k, 'Máx. ' ~ n|lower, p[k] if p else '', errores, 'text', extra='inputmode="numeric"') }}{% endfor %}</div>
+<button class="boton">Guardar</button></form>{% endblock %}

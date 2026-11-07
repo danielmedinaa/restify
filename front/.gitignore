@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+# Secretos: cualquier .env menos el ejemplo
+.env
+.env.*
+!.env.example
+.next-*/

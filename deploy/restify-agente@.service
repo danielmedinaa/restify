@@ -1,0 +1,18 @@
+[Unit]
+Description=Agente de instancias de RESTIFY (%i)
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+User=restify
+Group=docker
+WorkingDirectory=/srv/restify/%i/app/infra
+EnvironmentFile=/srv/restify/%i/agente.env
+ExecStart=/usr/bin/python3 /srv/restify/%i/app/infra/agente.py servir
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

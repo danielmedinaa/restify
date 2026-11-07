@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block titulo %}Cliente{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>{{ 'Nuevo cliente' if nuevo else 'Editar cliente' }}</h1>
+<form method="post" class="tarjeta"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<div class="grid2">
+{{ campo('nombre','Nombre comercial',c.nombre if c is mapping else c.nombre,errores,requerido=True,extra='maxlength="120"') }}
+{{ campo('razon_social','Razón social',c.razon_social if c is mapping else c.razon_social,errores) }}
+{{ campo('rif','RIF',c.rif if c is mapping else c.rif,errores,ayuda='Ej: J-12345678-9') }}
+{{ campo('contacto','Persona de contacto',c.contacto if c is mapping else c.contacto,errores) }}
+{{ campo('email','Correo',c.email if c is mapping else c.email,errores,'email') }}
+{{ campo('telefono','Teléfono',c.telefono if c is mapping else c.telefono,errores,'tel') }}
+</div>
+<label class="campo"><span>Notas internas</span><textarea name="notas" rows="4" maxlength="2000">{{ (c.notas if c is mapping else c.notas) or '' }}</textarea></label>
+<button class="boton">Guardar</button></form>{% endblock %}

@@ -1,0 +1,18 @@
+/* Banner fijo de ambiente (solo dev y pre). Archivo aparte: la CSP no permite estilos en línea. */
+.banner-entorno {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 2147483000;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 12px/1 system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1a1819;
+  background: #f5b400;
+  pointer-events: none;
+}
+.banner-entorno[data-entorno="DESARROLLO"] { background: #38bdf8; }
+body.con-banner { padding-bottom: 26px; }

@@ -1,0 +1,30 @@
+# Secretos: NUNCA al repositorio (los .env.example sí)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencias y compilados
+node_modules/
+.next/
+.next-verify/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Datos locales
+panel/data/
+panel/run/*
+!panel/run/.gitkeep
+backend/media/
+*.sqlite3
+*.sql.gz
+
+# Editor / sistema
+.vscode/
+.idea/
+.DS_Store

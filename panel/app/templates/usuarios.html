@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block titulo %}Administradores{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<div class="barra"><h1>Administradores</h1>{% if g.admin.puede('usuarios','crear') %}<a class="boton" href="{{ url_for('admin.usuario_form') }}">Nuevo administrador</a>{% endif %}</div>
+<table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>2FA</th><th>Último acceso</th><th></th></tr></thead><tbody>
+{% for u in usuarios %}<tr class="{{ 'archivado' if not u.activo }}"><td>{{ u.nombre }}{% if not u.activo %} <span class="pill cancelada">inactivo</span>{% endif %}</td><td>{{ u.email }}</td><td>{{ u.rol.nombre }}</td><td>{{ 'Sí' if u.totp_confirmado else 'Pendiente' }}</td><td>{{ u.ultimo_acceso|fechahora }}</td>
+<td class="acciones">{% if g.admin.puede('usuarios','editar') and u.id != g.admin.id %}<a href="{{ url_for('admin.usuario_form', id=u.id) }}">Editar</a>{% endif %}</td></tr>{% endfor %}</tbody></table>{% endblock %}

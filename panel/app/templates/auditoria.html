@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block titulo %}Auditoría{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<div class="barra"><h1>Auditoría</h1><a class="boton sec" href="{{ url_for('admin.bitacora', verificar=1, accion=accion) }}">Verificar integridad</a></div>
+{% if integra is not none %}<p class="aviso {{ 'ok' if integra else 'error' }}">{{ 'La cadena de eventos está íntegra.' if integra else 'ALERTA: el evento #' ~ roto ~ ' o uno anterior fue alterado.' }}</p>{% endif %}
+<form method="get" class="buscar"><input name="accion" value="{{ accion }}" placeholder="Filtrar por acción (ej: suscripcion., auth.)" maxlength="60"><button class="boton sec">Filtrar</button></form>
+<table><thead><tr><th>Fecha</th><th>Admin</th><th>Acción</th><th>Entidad</th><th>Detalle</th></tr></thead><tbody>
+{% for e in eventos %}<tr><td>{{ e.creado_en|fechahora }}</td><td>{{ e.admin_email or '—' }}</td><td><code>{{ e.accion }}</code></td><td>{{ e.entidad or '' }} {{ e.entidad_id or '' }}</td><td><small class="mudo">{{ e.detalle if e.detalle else '' }}</small></td></tr>{% endfor %}</tbody></table>{% endblock %}

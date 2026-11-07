@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block titulo %}{{ e.code }}{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% set cuerpo %}<h1>{{ e.code }}</h1><p>{{ {403:'No tienes permiso para esto.',404:'No encontramos eso.',429:'Demasiadas peticiones.'}.get(e.code, e.description) }}</p>
+<p><a href="{{ url_for('gestion.inicio') }}">Volver al inicio</a></p>{% endset %}
+{% block contenido %}{{ cuerpo }}{% endblock %}{% block solo %}{{ cuerpo }}{% endblock %}

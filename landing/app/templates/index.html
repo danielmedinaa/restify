@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% macro flecha() %}<svg aria-hidden="true" viewBox="0 0 20 20" class="ico"><path d="M4 10h11m-4-4 4 4-4 4" /></svg>{% endmacro %}
+{% macro check() %}<svg aria-hidden="true" viewBox="0 0 20 20" class="ico ico--check"><path d="m4.5 10.5 3.5 3.5 7.5-8" /></svg>{% endmacro %}
+{% macro wa() %}<svg aria-hidden="true" viewBox="0 0 24 24" class="ico ico--wa"><path d="M12 3.2a8.8 8.8 0 0 0-7.6 13.3L3.2 20.8l4.4-1.2A8.8 8.8 0 1 0 12 3.2Z" /><path d="M9.1 8.2c.2-.4.4-.4.6-.4h.5c.2 0 .4 0 .5.4l.7 1.7c.1.2 0 .4-.1.6l-.5.6c-.1.1-.2.3 0 .5.5.9 1.4 1.8 2.4 2.3.2.1.4.1.5-.1l.6-.7c.2-.2.3-.2.6-.1l1.6.8c.2.1.4.2.4.4 0 .6-.3 1.6-1.6 1.9-1 .2-2.6-.1-4.4-1.8-1.5-1.4-2.3-3-2.3-3.9 0-.9.3-1.7.5-2.2Z" /></svg>{% endmacro %}
+
+{% block cuerpo %}
+<div class="grano" aria-hidden="true"></div>
+
+<!-- ============================================================ navegación -->
+<header class="nav" data-nav>
+  <div class="nav__in envoltura">
+    <a href="#inicio" class="marca" aria-label="RESTIFY, inicio">
+      <img src="{{ url_for('static', filename='brand/sello.webp') }}" alt="" width="34" height="34" class="marca__sello" />
+      <span class="marca__palabra">RESTIFY</span>
+    </a>
+    <nav class="nav__links" aria-label="Secciones">
+      <a href="#funciones">Funciones</a>
+      <a href="#flujo">Cómo funciona</a>
+      <a href="#planes">Planes</a>
+      <a href="#preguntas">Preguntas</a>
+    </nav>
+    <a class="boton boton--claro boton--sm" href="#contacto">Pide una demo</a>
+  </div>
+</header>
+
+<main id="contenido">
+  <!-- ============================================================ hero -->
+  <section id="inicio" class="hero envoltura">
+    <div class="hero__texto">
+      <p class="eyebrow revelar">{{ c.HERO.eyebrow }}</p>
+      <h1 class="display display--hero revelar">{{ c.HERO.titulo | resaltar }}</h1>
+      <p class="lead revelar">{{ c.HERO.texto }}</p>
+      <div class="hero__ctas revelar">
+        <a class="boton boton--claro" href="{{ whatsapp() }}" target="_blank" rel="noopener">{{ wa() }} Pide una demo gratis</a>
+        <a class="boton boton--linea" href="#planes">Ver planes {{ flecha() }}</a>
+      </div>
+      <ul class="insignias revelar" aria-label="Lo esencial">
+        {% for i in c.HERO.insignias %}<li>{{ check() }}{{ i }}</li>{% endfor %}
+      </ul>
+    </div>
+
+    <!-- Mockup vivo del panel: la sala cambia sola -->
+    <div class="hero__visual revelar" aria-hidden="true">
+      <div class="panel">
+        <div class="panel__barra">
+          <span class="puntos"><i></i><i></i><i></i></span>
+          <span class="panel__url">restify · Sala</span>
+          <span class="en-vivo"><i></i>En vivo</span>
+        </div>
+        <div class="panel__cuerpo">
+          <div class="panel__cabeza">
+            <div>
+              <p class="micro">Sucursal Centro</p>
+              <p class="panel__titulo">Sala</p>
+            </div>
+            <dl class="panel__kpis">
+              <div><dt>Ocupadas</dt><dd data-kpi-ocupadas>5</dd></div>
+              <div><dt>Hoy</dt><dd>$ <span data-kpi-ventas>1.284</span></dd></div>
+            </dl>
+          </div>
+          <div class="sala" data-sala>
+            {% for m in range(1, 13) %}
+            <div class="mesa" data-mesa="{{ m }}">
+              <span class="mesa__num">{{ m }}</span>
+              <span class="mesa__estado"><i></i><b>Libre</b></span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="flotante flotante--cocina">
+        <p class="micro">Cocina · Mesa 4</p>
+        <ul class="tiquete">
+          <li class="tiquete__item tiquete__item--listo"><span>Hamburguesa #1</span><b>Lista</b></li>
+          <li class="tiquete__item" data-tiquete><span>Hamburguesa #2</span><b>Preparando</b></li>
+          <li class="tiquete__item tiquete__item--nota"><span>“sin cebolla”</span></li>
+        </ul>
+      </div>
+      <div class="flotante flotante--alerta">
+        <span class="punto punto--warn"></span>
+        <div>
+          <p class="flotante__t">Stock bajo</p>
+          <p class="micro">Carne molida: quedan 50 g</p>
+        </div>
+      </div>
+      <div class="flotante flotante--pago">
+        <p class="micro">Mesa 7 · cobrada</p>
+        <p class="flotante__monto">$ 5,00 <span>+</span> Bs 255,50</p>
+        <p class="micro">tasa BCV 36,50 · venta #1287</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ cinta -->
+  <div class="cinta" aria-label="Hecho para Venezuela">
+    <div class="cinta__pista">
+      {% for _ in range(2) %}
+      <ul {% if loop.index == 2 %}aria-hidden="true"{% endif %}>
+        {% for item in c.CINTA %}<li>{{ item }}</li>{% endfor %}
+      </ul>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ============================================================ 01 problema -->
+  <section class="seccion envoltura" aria-labelledby="t-problema">
+    <header class="seccion__cabeza revelar">
+      <p class="numeral">01 · El problema</p>
+      <h2 id="t-problema" class="display">Un servicio lleno <em>no debería ser un caos</em>.</h2>
+    </header>
+    <ol class="problemas">
+      {% for p in c.PROBLEMAS %}
+      <li class="problema revelar">
+        <span class="problema__n">{{ "%02d" | format(loop.index) }}</span>
+        <h3>{{ p.titulo }}</h3>
+        <p>{{ p.texto }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <!-- ============================================================ 02 funciones (bento) -->
+  <section id="funciones" class="seccion envoltura" aria-labelledby="t-funciones">
+    <header class="seccion__cabeza revelar">
+      <p class="numeral">02 · La solución</p>
+      <h2 id="t-funciones" class="display">Todo tu restaurante <em>en una pantalla</em>.</h2>
+    </header>
+
+    <div class="bento">
+      {% for f in c.FUNCIONES %}
+      <article class="tarjeta tarjeta--{{ f.clave }} revelar">
+        <div class="tarjeta__visual" aria-hidden="true">
+          {% if f.clave == "qr" %}
+          <div class="telefono">
+            <div class="qr">{% for celda in qr_patron %}<i{% if celda == "#" %} class="on"{% endif %}></i>{% endfor %}</div>
+            <ul class="telefono__menu">
+              <li><span>Hamburguesa doble</span><b>$ 12,50</b></li>
+              <li><span>Papas rústicas</span><b>Bs 146,00</b></li>
+              <li class="agotado"><span>Costilla BBQ</span><b>Agotado</b></li>
+            </ul>
+          </div>
+          {% elif f.clave == "cocina" %}
+          <div class="kds">
+            <div class="kds__cab"><b>Mesa 4</b><span class="kds__timer" data-timer>04:12</span></div>
+            <ul>
+              <li class="hecho"><span>Hamburguesa #1</span><i>Lista</i></li>
+              <li><span>Hamburguesa #2<small>“término medio”</small></span><button type="button" tabindex="-1">Listo</button></li>
+              <li><span>Papas rústicas #1</span><button type="button" tabindex="-1">Listo</button></li>
+            </ul>
+          </div>
+          {% elif f.clave == "stock" %}
+          <div class="medidor" data-medidor>
+            <div class="medidor__cifra"><span data-gramos>200</span><small>g de carne</small></div>
+            <div class="medidor__barra"><i data-barra></i><span class="medidor__min">mín. 60 g</span></div>
+            <p class="medidor__nota" data-medidor-nota>Se vende una hamburguesa de 150 g…</p>
+          </div>
+          {% elif f.clave == "caja" %}
+          <div class="cobro">
+            <div class="cobro__total"><span class="micro">Total</span><b>$ 12,00</b><span class="micro">Bs 438,00</span></div>
+            <ul>
+              <li><span>Efectivo</span><b>$ 5,00</b></li>
+              <li><span>Pago móvil</span><b>Bs 255,50</b></li>
+            </ul>
+            <div class="cobro__ok">{{ check() }} Pagado · mesa liberada</div>
+          </div>
+          {% elif f.clave == "ventas" %}
+          <div class="grafico">
+            <div class="grafico__cifra"><span class="micro">Vendido este mes</span><b>$ 18.420</b></div>
+            <div class="grafico__barras">{% for b in range(1, 13) %}<i class="b{{ b }}"></i>{% endfor %}</div>
+          </div>
+          {% elif f.clave == "factura" %}
+          <div class="papel">
+            <p class="papel__leyenda">Documento sin validez fiscal</p>
+            <p class="papel__emisor">Restify C.A. · J-12345678-9</p>
+            <ul>
+              <li><span>Base imponible 16 %</span><b>Bs 314,66</b></li>
+              <li><span>IVA 16 %</span><b>Bs 50,34</b></li>
+              <li><span>Exento (E)</span><b>Bs 73,00</b></li>
+              <li class="papel__total"><span>Total</span><b>Bs 438,00</b></li>
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        <div class="tarjeta__texto">
+          <span class="tarjeta__n">{{ "%02d" | format(loop.index) }}</span>
+          <h3>{{ f.titulo }}</h3>
+          <p>{{ f.texto }}</p>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <ul class="extras revelar" aria-label="Además incluye">
+      {% for e in c.EXTRAS %}<li>{{ check() }}{{ e }}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- ============================================================ 03 flujo -->
+  <section id="flujo" class="seccion seccion--flujo" aria-labelledby="t-flujo">
+    <div class="envoltura">
+      <header class="seccion__cabeza revelar">
+        <p class="numeral">03 · Cómo funciona</p>
+        <h2 id="t-flujo" class="display">De la mesa a la venta, <em>sin un papel</em>.</h2>
+      </header>
+      <ol class="flujo" data-flujo>
+        {% for paso in c.FLUJO %}
+        <li class="flujo__paso" data-paso="{{ loop.index0 }}">
+          <span class="flujo__punto"><i></i></span>
+          <p class="flujo__n">{{ "%02d" | format(loop.index) }}</p>
+          <h3 class="flujo__t">{{ paso.paso }}</h3>
+          <p>{{ paso.texto }}</p>
+        </li>
+        {% endfor %}
+        <li class="flujo__linea" aria-hidden="true"><i data-flujo-progreso></i></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ 04 planes -->
+  <section id="planes" class="seccion envoltura" aria-labelledby="t-planes">
+    <header class="seccion__cabeza revelar">
+      <p class="numeral">04 · Planes</p>
+      <h2 id="t-planes" class="display">Un plan para cada <em>tamaño de cocina</em>.</h2>
+    </header>
+    <div class="planes">
+      {% for p in c.PLANES %}
+      <article class="plan {% if p.destacado %}plan--destacado{% endif %} revelar">
+        {% if p.destacado %}<p class="plan__sello">★ El más elegido</p>{% endif %}
+        <h3 class="plan__nombre">{{ p.nombre }}</h3>
+        <p class="plan__para">{{ p.para }}</p>
+        <p class="plan__precio">
+          {% if p.precio %}
+          {% if p.desde %}<small>desde</small>{% endif %}<span class="plan__moneda">$</span>{{ p.precio }}<small>{{ p.periodo }}</small>
+          {% else %}
+          <span class="plan__cotiza">A tu medida</span>
+          {% endif %}
+        </p>
+        <ul class="plan__lista">
+          {% for i in p.incluye %}<li>{{ check() }}{{ i }}</li>{% endfor %}
+        </ul>
+        <a class="boton {{ 'boton--claro' if p.destacado else 'boton--linea' }} plan__cta"
+           href="{{ whatsapp('Hola, me interesa el plan ' ~ p.nombre ~ ' de RESTIFY.') }}" target="_blank" rel="noopener">{{ p.cta }}</a>
+      </article>
+      {% endfor %}
+    </div>
+    <ul class="notas revelar">
+      {% for n in c.NOTAS_PLANES %}<li>{{ n }}</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- ============================================================ 05 proceso -->
+  <section class="seccion envoltura" aria-labelledby="t-proceso">
+    <header class="seccion__cabeza revelar">
+      <p class="numeral">05 · Implementación</p>
+      <h2 id="t-proceso" class="display">Operando con RESTIFY <em>en una semana</em>.</h2>
+    </header>
+    <ol class="proceso">
+      {% for p in c.PROCESO %}
+      <li class="revelar">
+        <p class="proceso__t">{{ p.tiempo }}</p>
+        <h3>{{ p.titulo }}</h3>
+        <p>{{ p.texto }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <!-- ============================================================ 06 razones -->
+  <section class="seccion envoltura razones-envoltura" aria-labelledby="t-razones">
+    <div class="razones__sello revelar" aria-hidden="true">
+      <img src="{{ url_for('static', filename='brand/sello.webp') }}" alt="" width="320" height="320" loading="lazy" />
+    </div>
+    <div>
+      <header class="seccion__cabeza revelar">
+        <p class="numeral">06 · Por qué RESTIFY</p>
+        <h2 id="t-razones" class="display">Software serio, <em>no una plantilla</em>.</h2>
+      </header>
+      <ol class="razones">
+        {% for r in c.RAZONES %}
+        <li class="revelar">
+          <span class="razones__n">{{ "%02d" | format(loop.index) }}</span>
+          <div>
+            <h3>{{ r.titulo }}</h3>
+            <p>{{ r.texto }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============================================================ 07 preguntas -->
+  <section id="preguntas" class="seccion envoltura seccion--estrecha" aria-labelledby="t-preguntas">
+    <header class="seccion__cabeza revelar">
+      <p class="numeral">07 · Preguntas</p>
+      <h2 id="t-preguntas" class="display">Lo que todos <em>preguntan</em>.</h2>
+    </header>
+    <div class="faqs">
+      {% for f in c.FAQS %}
+      <details class="faq revelar" {% if loop.first %}open{% endif %}>
+        <summary><span>{{ f.p }}</span><i aria-hidden="true"></i></summary>
+        <p>{{ f.r }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ============================================================ cierre + contacto -->
+  <section id="contacto" class="cierre" aria-labelledby="t-cierre">
+    <div class="envoltura cierre__in">
+      <div class="cierre__texto revelar">
+        <h2 id="t-cierre" class="display display--cierre">{{ c.CIERRE.titulo | resaltar }}</h2>
+        <p class="lead">{{ c.CIERRE.texto }}</p>
+        <div class="cierre__canales">
+          <a class="boton boton--claro" href="{{ whatsapp() }}" target="_blank" rel="noopener">{{ wa() }} Escríbenos por WhatsApp</a>
+          {% if demo_url %}<a class="boton boton--linea" href="{{ demo_url }}" target="_blank" rel="noopener">Probar la demo {{ flecha() }}</a>{% endif %}
+        </div>
+        <p class="micro cierre__alt">o escríbenos a <a href="mailto:{{ email }}">{{ email }}</a></p>
+      </div>
+
+      <form class="formulario revelar" method="post" action="{{ url_for('landing.contacto') }}#contacto" data-formulario novalidate>
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}" />
+        <div class="trampa" aria-hidden="true">
+          <label>Sitio web <input type="text" name="sitio_web" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <div class="formulario__ok" data-ok {% if not enviado %}hidden{% endif %}>
+          <p class="display display--s">¡Listo! <em>Te escribimos hoy.</em></p>
+          <p>Revisamos tu solicitud y te contactamos por WhatsApp para agendar la demo.</p>
+        </div>
+
+        <div class="formulario__campos" data-campos {% if enviado %}hidden{% endif %}>
+          <p class="formulario__t">Agenda tu demo</p>
+          {% for nombre, etiqueta, tipo, extra in [
+            ("nombre", "Tu nombre", "text", 'autocomplete="name" maxlength="80" required'),
+            ("restaurante", "Restaurante", "text", 'autocomplete="organization" maxlength="120"'),
+            ("telefono", "WhatsApp", "tel", 'autocomplete="tel" maxlength="20" placeholder="+58 412 000 0000" required'),
+            ("email", "Correo (opcional)", "email", 'autocomplete="email" maxlength="254"'),
+          ] %}
+          <label class="campo {% if errores.get(nombre) %}campo--error{% endif %}">
+            <span>{{ etiqueta }}</span>
+            <input type="{{ tipo }}" name="{{ nombre }}" value="{{ form.get(nombre, '') }}" {{ extra | safe }} />
+            <small data-error="{{ nombre }}">{{ errores.get(nombre, '') }}</small>
+          </label>
+          {% endfor %}
+          <fieldset class="campo campo--opciones">
+            <legend>Sucursales</legend>
+            <div class="chips">
+              {% for s in sucursales_opciones %}
+              <label class="chip"><input type="radio" name="sucursales" value="{{ s }}" {% if form.get('sucursales') == s or (not form.get('sucursales') and loop.first) %}checked{% endif %} /><span>{{ s }}</span></label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <label class="campo">
+            <span>¿Algo que debamos saber? (opcional)</span>
+            <textarea name="mensaje" rows="3" maxlength="1000">{{ form.get('mensaje', '') }}</textarea>
+          </label>
+          <p class="formulario__error" data-error-general role="alert"></p>
+          <button class="boton boton--claro boton--ancho" type="submit" data-enviar>Quiero mi demo {{ flecha() }}</button>
+          <p class="micro">Solo usamos tus datos para contactarte sobre RESTIFY.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- ============================================================ footer -->
+<footer class="pie">
+  <div class="envoltura pie__in">
+    <div class="pie__marca">
+      <span class="marca__palabra marca__palabra--xl">RESTIFY</span>
+      <p class="micro">Gestión de cocina y restaurante · Hecho en Venezuela</p>
+    </div>
+    <nav class="pie__links" aria-label="Contacto">
+      <a href="{{ whatsapp() }}" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="https://instagram.com/{{ instagram }}" target="_blank" rel="noopener">@{{ instagram }}</a>
+      <a href="mailto:{{ email }}">{{ email }}</a>
+    </nav>
+    <p class="micro pie__legal">© {{ anio }} RESTIFY · Un producto de Daniel Medina Devs</p>
+  </div>
+</footer>
+{% endblock %}

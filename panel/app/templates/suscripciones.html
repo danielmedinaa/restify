@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block titulo %}Suscripciones{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<h1>Suscripciones</h1>
+<p class="filtros"><a href="{{ url_for('gestion.suscripciones') }}" {% if not estado %}aria-current="true"{% endif %}>Todas</a>{% for k, n in estados.items() %}<a href="{{ url_for('gestion.suscripciones', estado=k) }}" {% if estado == k %}aria-current="true"{% endif %}>{{ n }}</a>{% endfor %}</p>
+<table><thead><tr><th>Cliente</th><th>Instancia</th><th>Plan</th><th>Estado</th><th>Vence</th></tr></thead><tbody>
+{% for s in subs %}<tr><td><a href="{{ url_for('gestion.cliente', id=s.cliente_id) }}">{{ s.cliente.nombre }}</a></td><td><a href="{{ url_for('gestion.suscripcion', id=s.id) }}">{{ s.instancia.subdominio }}</a></td><td>{{ s.plan.nombre }}</td><td>{{ estado(s.estado) }}</td><td>{{ s.vence_en|fecha }}</td></tr>
+{% else %}<tr><td colspan="5" class="mudo">Nada por aquí.</td></tr>{% endfor %}</tbody></table>{% endblock %}

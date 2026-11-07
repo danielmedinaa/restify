@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block titulo %}{{ c.nombre }}{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<div class="barra"><h1>{{ c.nombre }}</h1>{% if g.admin.puede('clientes','editar') %}<a class="boton sec" href="{{ url_for('gestion.cliente_editar', id=c.id) }}">Editar</a>{% endif %}</div>
+<dl class="datos"><dt>Razón social</dt><dd>{{ c.razon_social or '—' }}</dd><dt>RIF</dt><dd>{{ c.rif or '—' }}</dd><dt>Contacto</dt><dd>{{ c.contacto or '—' }}</dd><dt>Correo</dt><dd>{{ c.email or '—' }}</dd><dt>Teléfono</dt><dd>{{ c.telefono or '—' }}</dd><dt>Notas</dt><dd class="pre">{{ c.notas or '—' }}</dd></dl>
+<div class="barra"><h2>Suscripciones</h2>{% if g.admin.puede('suscripciones','crear') %}<a class="boton" href="{{ url_for('gestion.suscripcion_nueva', id=c.id) }}">Nueva suscripción e instancia</a>{% endif %}</div>
+<table><thead><tr><th>Instancia</th><th>Plan</th><th>Estado</th><th>Vence</th></tr></thead><tbody>
+{% for s in c.suscripciones %}<tr><td><a href="{{ url_for('gestion.suscripcion', id=s.id) }}">{{ s.instancia.subdominio }}</a></td><td>{{ s.plan.nombre }}</td><td>{{ estado(s.estado) }}</td><td>{{ s.vence_en|fecha }}</td></tr>
+{% else %}<tr><td colspan="4" class="mudo">Aún no tiene suscripciones.</td></tr>{% endfor %}</tbody></table>{% endblock %}

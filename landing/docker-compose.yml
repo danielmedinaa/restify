@@ -1,0 +1,32 @@
+name: restify-landing
+
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      LEADS_DB: /app/data/leads.sqlite3
+    ports:
+      - "${LANDING_PORT:-8020}:8000"
+    volumes:
+      - leads:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  tests:
+    profiles: ["test"]
+    build:
+      context: .
+      args:
+        REQUIREMENTS: requirements-dev.txt
+    environment:
+      LANDING_ENV: test
+      LEADS_DB: /tmp/leads-test.sqlite3
+    command: ["pytest", "-q"]
+
+volumes:
+  leads:

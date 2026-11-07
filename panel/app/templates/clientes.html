@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block titulo %}Clientes{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}<div class="barra"><h1>Clientes</h1>{% if g.admin.puede('clientes','crear') %}<a class="boton" href="{{ url_for('gestion.cliente_nuevo') }}">Nuevo cliente</a>{% endif %}</div>
+<form method="get" class="buscar"><input name="q" value="{{ q }}" placeholder="Buscar por nombre, correo, RIF o dominio" maxlength="80"><button class="boton sec">Buscar</button></form>
+<table><thead><tr><th>Cliente</th><th>Contacto</th><th>Instancias</th></tr></thead><tbody>
+{% for c in clientes %}<tr><td><a href="{{ url_for('gestion.cliente', id=c.id) }}">{{ c.nombre }}</a></td><td>{{ c.email or c.telefono or '—' }}</td>
+<td>{% for s in c.suscripciones %}{{ estado(s.estado) }} {{ s.instancia.subdominio }} {% else %}<span class="mudo">sin suscripción</span>{% endfor %}</td></tr>
+{% else %}<tr><td colspan="3" class="mudo">Sin resultados.</td></tr>{% endfor %}</tbody></table>{% endblock %}

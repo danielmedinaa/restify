@@ -1,0 +1,10 @@
+[Unit]
+Description=Respaldo de las bases de datos de los clientes de RESTIFY (%i)
+After=docker.service
+
+[Service]
+Type=oneshot
+User=restify
+Group=docker
+EnvironmentFile=/srv/restify/%i/agente.env
+ExecStart=/usr/bin/python3 /srv/restify/%i/app/infra/agente.py respaldar --conservar 7

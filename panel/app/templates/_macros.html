@@ -1,0 +1,9 @@
+{% macro campo(nombre, etiqueta, valor='', errores={}, tipo='text', ayuda='', requerido=False, extra='') %}
+<label class="campo">
+  <span>{{ etiqueta }}</span>
+  <input type="{{ tipo }}" name="{{ nombre }}" value="{{ valor if valor is not none else '' }}" {{ 'required' if requerido }} {{ extra|safe }}>
+  {% if ayuda %}<small>{{ ayuda }}</small>{% endif %}
+  {% if errores.get(nombre) %}<em class="err">{{ errores[nombre] }}</em>{% endif %}
+</label>
+{% endmacro %}
+{% macro estado(e) %}<span class="pill {{ e }}">{{ ESTADOS.get(e, e) }}</span>{% endmacro %}

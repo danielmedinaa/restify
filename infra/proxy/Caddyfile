@@ -1,0 +1,27 @@
+# Un solo proxy para TODAS las instancias: <sub>.restify.localhost:8088 -> los contenedores restify-<sub>-*
+# No hay que tocar nada al crear o borrar instancias: el destino se calcula con el subdominio.
+{
+	auto_https off
+	admin off
+}
+
+:8080 {
+	@inst header_regexp sub Host ^([a-z0-9-]+)\.restify\.localhost(:[0-9]+)?$
+	handle @inst {
+		# Tiempo real directo a la API; todo lo demás (incluidas las fotos y /bff) al front
+		handle /ws/* {
+			reverse_proxy restify-{re.sub.1}-api-1:8000
+		}
+		handle {
+			reverse_proxy restify-{re.sub.1}-front-1:3000
+		}
+	}
+	handle {
+		respond "RESTIFY · instancia no encontrada" 404
+	}
+
+	handle_errors {
+		header Content-Type "text/html; charset=utf-8"
+		respond `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width"><title>RESTIFY</title><body style="background:#1a1819;color:#fff;font:16px system-ui;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center"><div><h1>Servicio no disponible</h1><p style="opacity:.7">Esta cuenta está pausada, en mantenimiento o aún se está creando.<br>Si crees que es un error, contacta a RESTIFY.</p></div>` 503
+	}
+}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}{% block titulo %}{{ s.instancia.subdominio }}{% endblock %}
+{% from "_macros.html" import campo, estado %}
+{% block contenido %}{% set i = s.instancia %}
+<div class="barra"><div><h1>{{ i.subdominio }}</h1><p class="mudo"><a href="{{ url_for('gestion.cliente', id=s.cliente_id) }}">{{ s.cliente.nombre }}</a> · <a href="{{ url }}" rel="noopener noreferrer" target="_blank">{{ url }}</a></p></div>{{ estado(s.estado) }}</div>
+
+<section class="tarjeta"><h2>Estado de la suscripción</h2>
+<dl class="datos"><dt>Desde</dt><dd>{{ s.estado_desde|fechahora }}</dd><dt>Motivo</dt><dd>{{ s.motivo_estado or '—' }}</dd><dt>Instancia (infra)</dt><dd>{{ i.estado_infra }}{% if i.error_infra %} — {{ i.error_infra }}{% endif %}</dd><dt>Última consulta de la instancia</dt><dd>{{ i.ultima_consulta|fechahora }}</dd></dl>
+{% if i.estado_infra in ('error','sin_crear','creando') and s.estado == 'activa' and g.admin.puede('instancias','editar') %}
+<form method="post" action="{{ url_for('gestion.instancia_reintentar', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="boton">Reintentar crear la instancia</button></form>{% endif %}
+{% if g.admin.puede('suscripciones','editar') and permitidos %}
+<div class="acciones-estado">
+{% set textos = {'activa':'Activar' if s.estado != 'pausada' else 'Reanudar','pausada':'Pausar','suspendida':'Suspender','cancelada':'Cancelar'} %}
+{% for e in ['activa','pausada','suspendida','cancelada'] if e in permitidos %}
+<form method="post" action="{{ url_for('gestion.suscripcion_estado', id=s.id) }}" class="estado-form">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}"><input type="hidden" name="estado" value="{{ e }}">
+  {% if e in ('suspendida','cancelada') %}<input name="motivo" placeholder="Motivo (obligatorio)" required maxlength="300">{% endif %}
+  {% if e == 'cancelada' %}<input type="password" name="confirmar_password" placeholder="Tu contraseña" required autocomplete="current-password">{% endif %}
+  <button class="boton {{ 'peligro' if e in ('suspendida','cancelada') else 'sec' }}">{{ textos[e] }}</button>
+</form>{% endfor %}</div>
+<p class="mudo"><strong>Pausar</strong>: a pedido del cliente, la instancia se detiene y conserva sus datos. <strong>Suspender</strong>: bloqueo por impago o abuso. <strong>Cancelar</strong>: baja; luego puedes eliminar la instancia.</p>
+{% endif %}</section>
+
+{% if g.admin.puede('instancias','editar') and i.estado_infra not in ('sin_crear','eliminada') %}
+<section class="tarjeta"><h2>Contenedores</h2>
+<p class="mudo">Estado de los contenedores de esta instancia y sus logs.</p>
+<a class="boton sec" href="{{ url_for('gestion.instancia_contenedores', id=s.id) }}">Ver contenedores y logs</a></section>{% endif %}
+
+<section class="tarjeta"><h2>Plan y límites</h2>
+{% if g.admin.puede('suscripciones','editar') %}
+<form method="post" action="{{ url_for('gestion.suscripcion_plan', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <select name="plan_id">{% for p in planes %}<option value="{{ p.id }}" {{ 'selected' if p.id == s.plan_id }}>{{ p.nombre }} — ${{ '%.2f'|format(p.precio_mensual|float) }}{{ ' (archivado)' if not p.activo }}</option>{% endfor %}</select>
+  <button class="boton sec">Cambiar plan</button></form>
+<form method="post" action="{{ url_for('gestion.suscripcion_limites', id=s.id) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<table><thead><tr><th>Límite</th><th>Del plan</th><th>A la medida (opcional)</th><th>Vigente</th></tr></thead><tbody>
+{% for k, n in LIMITES.items() %}<tr><td>{{ n }}</td><td>{{ s.plan[k]|limite }}</td><td><input name="{{ k }}" value="{{ s['ajuste_' ~ k] if s['ajuste_' ~ k] is not none else '' }}" inputmode="numeric" placeholder="usar el del plan"></td><td><strong>{{ s.limite(k)|limite }}</strong></td></tr>{% endfor %}</tbody></table>
+<button class="boton sec">Guardar límites a la medida</button></form>
+{% else %}<table><tbody>{% for k, n in LIMITES.items() %}<tr><td>{{ n }}</td><td>{{ s.limite(k)|limite }}</td></tr>{% endfor %}</tbody></table>{% endif %}</section>
+
+<section class="tarjeta"><h2>Vencimiento</h2>
+<form method="post" action="{{ url_for('gestion.suscripcion_vencimiento', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <input type="date" name="vence_en" value="{{ s.vence_en.date().isoformat() if s.vence_en }}" {{ 'disabled' if not g.admin.puede('suscripciones','editar') }}>
+  {% if g.admin.puede('suscripciones','editar') %}<button class="boton sec">Guardar</button>{% endif %}</form>
+<p class="mudo">Pasada esta fecha la instancia sigue funcionando 3 días de gracia; luego la API le indica que bloquee el acceso. Vacío = sin vencimiento.</p></section>
+
+<section class="tarjeta"><h2>Dominio</h2>
+<p>Subdominio: <strong>{{ i.subdominio }}</strong></p>
+{% if g.admin.puede('instancias','editar') %}
+<form method="post" action="{{ url_for('gestion.instancia_dominio', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <input name="dominio" value="{{ i.dominio_propio or '' }}" placeholder="menu.turestaurante.com (dominio propio)" maxlength="253"><button class="boton sec">Guardar dominio</button></form>{% endif %}
+{% if i.dominio_propio %}
+<p>{{ i.dominio_propio }}: {% if i.dominio_verificado %}<span class="pill activa">verificado</span>{% else %}<span class="pill pausada">sin verificar</span>{% endif %}</p>
+{% if not i.dominio_verificado %}
+<p class="mudo">Pídele al cliente que cree estos registros DNS:</p>
+<table><thead><tr><th>Tipo</th><th>Nombre</th><th>Valor</th></tr></thead><tbody>{% for r in dns %}<tr><td>{{ r.tipo }}</td><td><code>{{ r.nombre }}</code></td><td><code>{{ r.valor }}</code></td></tr>{% endfor %}</tbody></table>
+{% if g.admin.puede('instancias','editar') %}<form method="post" action="{{ url_for('gestion.instancia_dominio_verificar', id=s.id) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="boton sec">Verificar ahora</button></form>{% endif %}
+{% endif %}{% endif %}</section>
+
+{% if g.admin.puede('instancias','editar') %}
+<section class="tarjeta"><h2>Token de la instancia</h2>
+<p>Prefijo actual: <code>{{ i.token_prefijo }}…</code></p>
+<form method="post" action="{{ url_for('gestion.instancia_token', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <input type="password" name="confirmar_password" placeholder="Tu contraseña" required autocomplete="current-password"><button class="boton sec">Rotar token</button></form>
+<p class="mudo">Rotarlo invalida el anterior al instante: úsalo si sospechas que se filtró.</p></section>{% endif %}
+
+{% if s.estado == 'cancelada' and g.admin.puede('instancias','eliminar') and i.estado_infra != 'eliminada' %}
+<section class="tarjeta peligro-zona"><h2>Eliminar instancia</h2><p>Borra la instancia y sus datos del servidor. No se puede deshacer.</p>
+<form method="post" action="{{ url_for('gestion.instancia_eliminar', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <input name="subdominio" placeholder="Escribe «{{ i.subdominio }}»" required autocomplete="off"><input type="password" name="confirmar_password" placeholder="Tu contraseña" required autocomplete="current-password"><button class="boton peligro">Eliminar</button></form></section>{% endif %}
+{% endblock %}
