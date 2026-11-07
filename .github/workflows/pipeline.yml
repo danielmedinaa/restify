@@ -45,7 +45,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.13"}
-      - run: pip install pytest
+      # Los tests del agente usan httpx para hablarle por el socket (la versión del panel)
+      - run: pip install pytest httpx==0.28.1
       - run: pytest -q
 
   backend:
