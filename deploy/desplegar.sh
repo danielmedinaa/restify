@@ -187,6 +187,9 @@ install -m 644 deploy/restify-vigilar.service deploy/restify-vigilar.timer /etc/
 systemctl daemon-reload
 systemctl enable --now restify-vigilar.timer >/dev/null
 
+# El token de ghcr.io caduca al terminar el workflow: no lo dejamos guardado en disco
+[ -z "$GHCR_USUARIO" ] || runuser -u restify -- docker logout ghcr.io >/dev/null 2>&1 || true
+
 echo
 docker compose -p "$PREFIJO" -f deploy/docker-compose.yml --env-file deploy/.env ps
 cat <<EOF

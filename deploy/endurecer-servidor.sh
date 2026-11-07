@@ -61,6 +61,12 @@ EOF
 sysctl -q -p /etc/sysctl.d/98-restify-red.conf
 echo "[ok] sysctl de red"
 
+# Este servidor solo usa IPv4 (el DNS tiene registros A). Con IPv6 activo pero sin ruta, Docker y Caddy se quedan
+# esperando ("i/o timeout" / "network is unreachable") al descargar imágenes o pedir certificados.
+printf 'net.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\n' > /etc/sysctl.d/97-restify-sin-ipv6.conf
+sysctl -q -p /etc/sysctl.d/97-restify-sin-ipv6.conf
+echo "[ok] IPv6 desactivado (solo IPv4)"
+
 # ---------------------------------------------------------------- 4) Docker
 # default-address-pools: por defecto Docker solo alcanza para ~30 redes en total y cada cliente usa 2.
 # Con esta reserva caben miles (10.64.0.0/12 en bloques /24). Las redes ya existentes no cambian.
