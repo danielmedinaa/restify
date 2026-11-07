@@ -98,12 +98,18 @@ x-seguro: &seguro
   cap_drop: [ALL]
   security_opt: ["no-new-privileges:true"]
 
+# Sin tope los logs de Docker crecen hasta llenar el disco
+x-logs: &logs
+  driver: json-file
+  options: {{max-size: "10m", max-file: "3"}}
+
 services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
     env_file: db.env
     mem_limit: 256m
+    logging: *logs
     volumes: [pgdata:/var/lib/postgresql/data]
     networks: [interna]
     healthcheck:
@@ -116,6 +122,7 @@ services:
     image: redis:7-alpine
     command: ["redis-server", "--requirepass", "${{REDIS_PASSWORD}}", "--appendonly", "yes"]
     mem_limit: 64m
+    logging: *logs
     user: redis   # directo como "redis": sin root, sin capacidades y sin tocar permisos al reiniciar
     volumes: [redisdata:/data]
     networks: [interna]
@@ -131,6 +138,7 @@ services:
     image: {imagen_api}
     env_file: api.env
     mem_limit: 384m
+    logging: *logs
     volumes: [media:/app/media]
     networks: [interna, restify-net]
     depends_on:
@@ -141,6 +149,7 @@ services:
     image: {imagen_front}
     env_file: front.env
     mem_limit: 256m
+    logging: *logs
     networks: [interna, restify-net]
 
 networks:

@@ -75,6 +75,36 @@ Entra a `https://panel.dev.turestify.com`, configura el 2FA y crea un cliente de
 ssh root@IP '/srv/restify/dev/app/deploy/desplegar.sh dev'     # sin imágenes: las construye en el servidor
 ```
 
+## Seguridad
+
+**Ya incluido en el código**
+- **Límites por IP en Caddy** (responde 429 con `Retry-After`): 600 peticiones/min en general, 20/min en logins
+  (`/login`, `/login/2fa`, `/bff/auth/login`) y 5/min en el formulario de contacto. Se ajustan en `deploy/proxy/Caddyfile`
+  (`(limites)`). Un local con varios empleados detrás de una misma IP comparte el cupo: súbelo si hace falta.
+- Cabeceras HSTS, `nosniff` y `Referrer-Policy` en todo; se oculta la cabecera `Server`.
+- Logs de Docker con tope (10 MB × 3 por contenedor) en los compose y en cada cliente; `daemon.json` en servidores nuevos.
+- Dependabot semanal (`.github/dependabot.yml`), con los PR hacia `develop`.
+- Además de lo anterior, las apps ya traen: bloqueo por intentos fallidos, 2FA en el panel, CSP estricta y cookies seguras.
+
+**Para aplicar lo nuevo en un servidor que ya existe** (el Caddy se reconstruye con el plugin de límites):
+```bash
+./deploy/subir.sh dev restify@IP
+ssh root@IP '/srv/restify/dev/app/deploy/desplegar.sh dev --proxy'
+```
+Los logs con tope de las instancias de clientes ya creadas se aplican cuando se actualizan de versión.
+
+**Para hacer tú**
+1. **SSH sin contraseña** (solo después de comprobar que entras con tu llave, o te quedas fuera):
+   ```bash
+   ssh root@IP "sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config && sshd -t && systemctl reload ssh"
+   ```
+   Antes de cerrar tu sesión, abre OTRA terminal y comprueba que sigues pudiendo entrar. En Ubuntu 24.04 revisa también
+   `/etc/ssh/sshd_config.d/*.conf`: algunos archivos de ahí pueden volver a activar `PasswordAuthentication yes`.
+2. **GitHub → Settings → Branches**: regla para `main` (y `develop`): exigir pull request y que pasen los tests.
+3. **GitHub → Settings → Code security**: activa Dependabot alerts, Secret scanning y Push protection.
+4. **Respaldos fuera del servidor**: copia `/srv/restify/pro/respaldos` a otro lugar (tu PC o almacenamiento externo).
+5. **Pendiente grande**: aislar las instancias entre sí (hoy comparten la red del ambiente). Hacerlo antes de tener clientes reales.
+
 ## Cosas a vigilar
 - **Primer certificado**: tarda 1-2 min. Logs: `docker compose -f /srv/restify/proxy/docker-compose.yml logs caddy`.
 - **No borres el volumen `caddy_data`**: Let's Encrypt limita las emisiones.

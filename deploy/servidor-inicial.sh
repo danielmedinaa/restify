@@ -15,6 +15,18 @@ if ! command -v docker >/dev/null; then
 fi
 systemctl enable --now docker
 
+# Tope a los logs de TODOS los contenedores nuevos (sin esto crecen hasta llenar el disco).
+# Si ya hay un daemon.json no se pisa; en ese caso agrega esta configuración a mano.
+if [ ! -f /etc/docker/daemon.json ]; then
+  cat > /etc/docker/daemon.json <<'EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}
+EOF
+  systemctl restart docker
+fi
+
 # Usuario sin contraseña que es dueño del código y corre los agentes. Se entra con tu misma llave SSH.
 id restify >/dev/null 2>&1 || useradd --create-home --shell /bin/bash restify
 usermod -aG docker restify

@@ -1,6 +1,10 @@
 # Un ambiente (dev | pre | pro): panel + su Postgres + landing. El proxy es compartido (deploy/proxy).
 # Los clientes (4 contenedores cada uno) los crea el agente de ESTE ambiente desde su panel.
 # Se opera con deploy/desplegar.sh <entorno>; ENTORNO llega por deploy/.env (lo escribe el script).
+x-logs: &logs
+  driver: json-file
+  options: {max-size: "10m", max-file: "3"}
+
 services:
   panel-db:
     image: postgres:16-alpine
@@ -9,6 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     mem_limit: 256m
+    logging: *logs
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -27,6 +32,7 @@ services:
       panel-db:
         condition: service_healthy
     mem_limit: 384m
+    logging: *logs
     networks:
       default: {}
       # Las instancias consultan su estado en http://panel:8000 (solo dentro de la red de este ambiente)
@@ -47,6 +53,7 @@ services:
     volumes:
       - leads:/app/data
     mem_limit: 192m
+    logging: *logs
     networks: [restify-net]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud')"]
