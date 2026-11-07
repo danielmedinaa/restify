@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />
     {% if banner_entorno %}<link rel="stylesheet" href="{{ url_for('static', filename='css/entorno.css') }}" />{% endif %}
     <script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
+    {% block cabeza %}{% endblock %}
   </head>
   <body{% if banner_entorno %} class="con-banner"{% endif %}>
     {% if banner_entorno %}<div class="banner-entorno" data-entorno="{{ banner_entorno }}" role="status">{{ banner_entorno }}</div>{% endif %}

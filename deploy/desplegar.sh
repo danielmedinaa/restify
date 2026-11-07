@@ -104,6 +104,14 @@ fijar() {  # fijar <archivo> <CLAVE> <valor>: agrega o actualiza una línea del 
 fijar panel/.env BANNER_ENTORNO "$BANNER"
 fijar landing/.env BANNER_ENTORNO "$BANNER"
 
+# Landing: "proximamente" (por defecto) muestra una página de espera en vez de la landing y bloquea el formulario.
+# Para abrirla: LANDING_MODO=abierta en /srv/restify/config.env y volver a desplegar.
+fijar landing/.env LANDING_MODO "${LANDING_MODO:-proximamente}"
+# Datos de contacto: se sincronizan en cada despliegue (cambia config.env y despliega; no hace falta editar a mano)
+[ -z "${WHATSAPP_NUMERO:-}" ] || fijar landing/.env WHATSAPP_NUMERO "$WHATSAPP_NUMERO"
+[ -z "${CONTACTO_EMAIL:-}" ] || fijar landing/.env CONTACTO_EMAIL "$CONTACTO_EMAIL"
+[ -z "${INSTAGRAM:-}" ] || fijar landing/.env INSTAGRAM "$INSTAGRAM"
+
 # Variables del compose de este ambiente (ENTORNO decide el nombre de la red)
 printf 'ENTORNO=%s\n' "$ENTORNO" > deploy/.env
 

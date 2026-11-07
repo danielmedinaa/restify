@@ -119,6 +119,16 @@ recrean, `desplegar.sh` los reconecta solo (`agente.py reconectar`).
 - Restar riesgo del agente: tiene acceso a Docker (equivale a root en el servidor). Está acotado a 4 acciones firmadas,
   pero protege `/srv/restify/*/agente.env` y la llave de CI.
 
+## Landing: modo "Próximamente"
+
+Mientras preparas el lanzamiento, la landing de **todos** los ambientes muestra una página de espera ("Estamos preparando
+*algo* para ti") con botones de WhatsApp e Instagram; el formulario de demo queda bloqueado y el sitio no se indexa.
+Es el comportamiento por defecto de `desplegar.sh`.
+
+Para **abrir la landing**: en `/srv/restify/config.env` del servidor pon `LANDING_MODO=abierta` y vuelve a desplegar
+(un push). Para volver a cerrarla, `LANDING_MODO=proximamente`. Los datos de contacto (`WHATSAPP_NUMERO`,
+`CONTACTO_EMAIL`, `INSTAGRAM`) también se sincronizan desde ese archivo en cada despliegue.
+
 ## Cosas a vigilar
 - **Primer certificado**: tarda 1-2 min. Logs: `docker compose -f /srv/restify/proxy/docker-compose.yml logs caddy`.
 - **No borres el volumen `caddy_data`**: Let's Encrypt limita las emisiones.

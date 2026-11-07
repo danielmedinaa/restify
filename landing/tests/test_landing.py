@@ -104,3 +104,56 @@ def test_chat_tawk_solo_si_esta_configurado(tmp_path):
 def test_sin_tawk_la_csp_sigue_cerrada(client):
     r = client.get("/")
     assert "tawk" not in r.get_data(as_text=True) and "tawk" not in r.headers["Content-Security-Policy"]
+
+
+# ---------------------------------------------------------------- modo "Próximamente"
+
+@pytest.fixture
+def pronto(tmp_path):
+    class ConfigPronto(Config):
+        TESTING = True
+        SECRET_KEY = "test-secret"
+        LEADS_DB = tmp_path / "leads.sqlite3"
+        MODO = "proximamente"
+
+    return create_app(ConfigPronto).test_client()
+
+
+def test_en_proximamente_la_portada_es_la_pagina_de_espera(pronto):
+    r = pronto.get("/")
+    html = r.get_data(as_text=True)
+    assert r.status_code == 200  # 200: el monitoreo no debe creer que el sitio está caído
+    assert "Próximamente" in html and "<em>algo</em>" in html
+    assert "proximamente.css" in html
+    assert "Planes" not in html and 'name="csrf"' not in html  # nada de la landing completa ni del formulario
+
+
+def test_en_proximamente_se_bloquea_el_formulario(pronto):
+    assert pronto.post("/contacto", json=_lead()).status_code == 404
+
+
+def test_en_proximamente_salud_sigue_respondiendo_y_no_se_indexa(pronto):
+    assert pronto.get("/salud").status_code == 200
+    assert "Disallow: /" in pronto.get("/robots.txt").get_data(as_text=True)
+
+
+def test_proximamente_respeta_la_csp_sin_estilos_en_linea(pronto):
+    r = pronto.get("/")
+    assert "style-src 'self'" in r.headers["Content-Security-Policy"]
+    assert "style=" not in r.get_data(as_text=True)
+
+
+def test_el_modo_acepta_tilde_y_valores_raros_abren_la_landing(monkeypatch):
+    from app import config
+
+    monkeypatch.setenv("LANDING_MODO", " Próximamente ")
+    import importlib
+    assert importlib.reload(config).Config.MODO == "proximamente"
+    monkeypatch.setenv("LANDING_MODO", "cualquier-cosa")
+    assert importlib.reload(config).Config.MODO == "abierta"
+    monkeypatch.delenv("LANDING_MODO")
+    assert importlib.reload(config).Config.MODO == "abierta"
+
+
+def test_la_landing_abierta_sigue_indexable(client):
+    assert "Allow: /" in client.get("/robots.txt").get_data(as_text=True)

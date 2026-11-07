@@ -23,6 +23,10 @@ class Config:
     INSTAGRAM = os.environ.get("INSTAGRAM", "restify.app")
     DEMO_URL = os.environ.get("DEMO_URL", "")  # link a la app de demostración, si existe
 
+    # "proximamente" = en vez de la landing se muestra una página de "Próximamente" y se bloquea el formulario.
+    # Cualquier otro valor = landing abierta. (Acepta "próximamente" con tilde.)
+    MODO = "proximamente" if os.environ.get("LANDING_MODO", "").strip().lower().replace("ó", "o") == "proximamente" else "abierta"
+
     # Banner fijo de ambiente: "DESARROLLO" o "PRE PRODUCCION". Vacío (producción) = sin banner.
     BANNER_ENTORNO = os.environ.get("BANNER_ENTORNO", "")
 

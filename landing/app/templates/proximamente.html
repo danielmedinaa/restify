@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titulo %}RESTIFY · Próximamente{% endblock %}
+{% block cabeza %}<link rel="stylesheet" href="{{ url_for('static', filename='css/proximamente.css') }}" />{% endblock %}
+{% block cuerpo %}
+<main id="contenido" class="vacio pronto">
+  <img class="pronto__sello" src="{{ url_for('static', filename='brand/sello.webp') }}" alt="RESTIFY" width="64" height="64" />
+  <p class="eyebrow pronto__estado"><span class="pronto__punto" aria-hidden="true"></span>Próximamente</p>
+  <h1 class="display display--hero">{{ "Estamos preparando *algo* para ti."|resaltar }}</h1>
+  <p class="pronto__texto">Comandas, cocina, caja e inventario en una sola pantalla. Tu restaurante, en sincronía. Muy pronto.</p>
+  <div class="pronto__acciones">
+    <a class="boton boton--claro" href="{{ whatsapp('Hola, quiero que me avisen cuando salga RESTIFY.') }}" target="_blank" rel="noopener">Avísame cuando salga</a>
+    {% if instagram %}<a class="boton boton--linea" href="https://instagram.com/{{ instagram }}" target="_blank" rel="noopener">@{{ instagram }}</a>{% endif %}
+  </div>
+  <p class="pronto__pie">© {{ anio }} RESTIFY · Hecho en Venezuela</p>
+</main>
+{% endblock %}

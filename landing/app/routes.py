@@ -1,7 +1,7 @@
 from datetime import date
 from urllib.parse import quote
 
-from flask import Blueprint, current_app, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
 
 from app import leads
 from app.seguridad import csrf_valido, ip_cliente
@@ -42,14 +42,22 @@ def contexto():
     }
 
 
+def _proximamente() -> bool:
+    return current_app.config["MODO"] == "proximamente"
+
+
 @bp.get("/")
 def inicio():
+    if _proximamente():
+        return render_template("proximamente.html")
     return render_template("index.html", enviado=request.args.get("enviado") == "1", errores={}, form={})
 
 
 @bp.post("/contacto")
 def contacto():
     """Formulario de demo. Con JS responde JSON; sin JS, redirige o vuelve a pintar con errores."""
+    if _proximamente():
+        abort(404)  # mientras la landing está bloqueada no se reciben solicitudes
     quiere_json = request.is_json or request.accept_mimetypes.best == "application/json"
     datos = request.get_json(silent=True) if request.is_json else request.form
     datos = datos or {}
@@ -90,7 +98,10 @@ def salud():
 
 @bp.get("/robots.txt")
 def robots():
-    return current_app.response_class("User-agent: *\nAllow: /\n", mimetype="text/plain")
+    cfg = current_app.config
+    # Ni la página de "Próximamente" ni los ambientes dev/pre deben aparecer en buscadores
+    oculto = _proximamente() or bool(cfg["BANNER_ENTORNO"])
+    return current_app.response_class(f"User-agent: *\n{'Disallow' if oculto else 'Allow'}: /\n", mimetype="text/plain")
 
 
 @bp.app_errorhandler(404)
