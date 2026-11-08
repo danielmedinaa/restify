@@ -6,7 +6,7 @@ from app.extensions import db
 from app.modelos import LIMITES, Instancia
 
 RESERVADOS = {
-    "www", "panel", "admin", "api", "app", "demo", "mail", "smtp", "ftp", "ns1", "ns2", "soporte",
+    "www", "panel", "admin", "api", "app", "mail", "smtp", "ftp", "ns1", "ns2", "soporte",
     "support", "status", "docs", "blog", "landing", "static", "cdn", "dev", "test", "staging", "root",
     "login", "billing", "pagos", "restify",
 }

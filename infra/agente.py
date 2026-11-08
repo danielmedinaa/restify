@@ -50,7 +50,7 @@ VENTANA_SEG = 60
 _SUB = re.compile(r"^[a-z0-9](?:[a-z0-9-]{1,30}[a-z0-9])$")
 _DOMINIO = re.compile(r"^[a-z0-9]([a-z0-9.-]{1,98}[a-z0-9])$")
 RESERVADOS = {
-    "www", "panel", "admin", "api", "app", "demo", "mail", "smtp", "ftp", "ns1", "ns2", "soporte", "support",
+    "www", "panel", "admin", "api", "app", "mail", "smtp", "ftp", "ns1", "ns2", "soporte", "support",
     "status", "docs", "blog", "landing", "static", "cdn", "dev", "test", "staging", "root", "login", "billing",
     "pagos", "restify", "pre", "pro", "prod", "uat",
 }

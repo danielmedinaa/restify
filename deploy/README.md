@@ -129,6 +129,36 @@ Para **abrir la landing**: en `/srv/restify/config.env` del servidor pon `LANDIN
 (un push). Para volver a cerrarla, `LANDING_MODO=proximamente`. Los datos de contacto (`WHATSAPP_NUMERO`,
 `CONTACTO_EMAIL`, `INSTAGRAM`) también se sincronizan desde ese archivo en cada despliegue.
 
+## Demos con datos completos
+
+Cada ambiente puede tener un cliente de demostración **completo**: 5 proveedores (ficticios), 32 insumos con presentaciones,
+compras reales que dejan el stock y el último costo, un menú de 23 platos y bebidas con recetas, 2 zonas con 16 mesas y QR,
+los roles Mesero, Cocina y Cajero, y un usuario de cada uno. Precios en USD y bolívares a la tasa BCV.
+
+1. **Crea el cliente** desde el panel del ambiente (Clientes → Nuevo → "Nueva suscripción e instancia"). Para la demo pública
+   de pro puedes usar el subdominio `demo` (`demo.turestify.com`). No hace falta pasar por el asistente de configuración.
+2. **Carga los datos** desde tu PC (pide una contraseña, que será la del administrador y la de los usuarios demo):
+   ```bash
+   ./deploy/demo.sh dev demo
+   ./deploy/demo.sh pre demo
+   ./deploy/demo.sh pro demo          # TASA_BCV=40.25 ./deploy/demo.sh pro demo  para otra tasa
+   ```
+   Se puede repetir: solo agrega lo que falte. Requiere que ese ambiente ya tenga desplegada la versión con `preparar-demo`.
+3. Entra con `admin@demo.turestify.com` (o el correo que hayas pasado) y la contraseña elegida. Los usuarios demo son
+   `mesero@`, `cocina@` y `cajero@demo.turestify.com`, todos con esa misma contraseña.
+
+⚠️ Una demo creada **antes** de esto, con otra moneda principal (por ejemplo bolívares), no se puede completar: el comando lo
+detecta y se detiene sin tocar nada. Elimina ese cliente desde el panel y créalo de nuevo.
+
+**Reiniciar la demo pública** (borrar lo que hayan hecho los prospectos): eliminar el cliente desde el panel, crearlo de nuevo
+con el mismo subdominio y volver a correr `demo.sh`. Un reinicio automático diario queda como mejora pendiente.
+
+**Si una demo muestra "Servicio no disponible"**, diagnostícala (solo lectura, no cambia nada):
+```bash
+ssh root@45.13.235.240 'bash -s -- dev demobasic' < deploy/diagnosticar.sh
+```
+Te dice qué contenedores corren, si Caddy y el panel están conectados a la red del cliente y cómo arreglarlo.
+
 ## Cosas a vigilar
 - **Primer certificado**: tarda 1-2 min. Logs: `docker compose -f /srv/restify/proxy/docker-compose.yml logs caddy`.
 - **No borres el volumen `caddy_data`**: Let's Encrypt limita las emisiones.

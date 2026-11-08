@@ -4,6 +4,8 @@
   docker compose exec api python -m app.cli crear-api-key --nombre "Panel web"
   docker compose exec api python -m app.cli crear-moneda-principal --codigo USD --nombre Dólar --simbolo '$'
   docker compose exec api python -m app.cli sembrar-demo     # menú, insumos y stock de ejemplo (BD sin datos de negocio)
+  printf '%s' "$CLAVE" | docker compose exec -T api python -m app.cli preparar-demo --email admin@... --password-stdin
+      # instancia de demostración COMPLETA (proveedores, compras, menú, mesas, roles y usuarios); se puede repetir
 """
 
 import argparse
@@ -188,6 +190,35 @@ async def sembrar_demo() -> None:
     print(f"Listo: {len(_INSUMOS)} insumos, {len(_MENU)} productos con receta y stock en {len(sucursales)} sucursal(es).")
 
 
+async def preparar_demo(args) -> None:
+    from decimal import Decimal
+
+    from app import demo
+
+    if args.password_stdin:
+        password = sys.stdin.readline().rstrip("\n")
+    else:
+        password = getpass.getpass("Contraseña del administrador y de los usuarios demo: ")
+    try:
+        async with SessionLocal() as session:
+            r = await demo.preparar(
+                session, email=args.email, nombre=args.nombre, password=password, tasa_bcv=Decimal(args.tasa_bcv),
+                zona_horaria=args.zona_horaria, token=args.token, dominio_correos=args.dominio_correos,
+            )
+    except ValidationError as e:
+        sys.exit(e.errors()[0]["msg"])
+    except ValueError as e:
+        sys.exit(str(e))
+    if r.creado:
+        print("Creado: " + ", ".join(f"{n} {k}" for k, n in r.creado.items()))
+    else:
+        print("Nada que crear: la instancia ya estaba completa.")
+    print(f"Administrador: {args.email}")
+    for rol, correo in r.usuarios:
+        print(f"{rol}: {correo}")
+    print("(todos con la contraseña indicada)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="comando", required=True)
@@ -200,6 +231,15 @@ def main() -> None:
     p.add_argument("--nombre", required=True)
 
     sub.add_parser("sembrar-demo")
+
+    p = sub.add_parser("preparar-demo", help="Instancia de demostración completa (idempotente)")
+    p.add_argument("--email", required=True)
+    p.add_argument("--nombre", default="Administrador")
+    p.add_argument("--password-stdin", action="store_true", help="Lee la contraseña de la entrada estándar")
+    p.add_argument("--tasa-bcv", default="36.50", help="Bolívares por dólar (cámbiala a la tasa del día)")
+    p.add_argument("--zona-horaria", default="America/Caracas")
+    p.add_argument("--token", default=None, help="Token de la instancia en el panel de RESTIFY (opcional)")
+    p.add_argument("--dominio-correos", default="demo.turestify.com", help="Dominio de los usuarios demo (mesero@...)")
 
     p = sub.add_parser("crear-moneda-principal")
     p.add_argument("--codigo", required=True)
@@ -216,6 +256,8 @@ def main() -> None:
                 await crear_api_key(args.nombre)
             elif args.comando == "sembrar-demo":
                 await sembrar_demo()
+            elif args.comando == "preparar-demo":
+                await preparar_demo(args)
             else:
                 await crear_moneda_principal(args.codigo, args.nombre, args.simbolo)
         finally:
