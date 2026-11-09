@@ -63,6 +63,9 @@ echo "[ok] sysctl de red"
 
 # Este servidor solo usa IPv4 (el DNS tiene registros A). Con IPv6 activo pero sin ruta, Docker y Caddy se quedan
 # esperando ("i/o timeout" / "network is unreachable") al descargar imágenes o pedir certificados.
+# Los programas en Go (Docker incluido) detectan si hay IPv6 UNA vez, al arrancar: si se desactiva con Docker ya corriendo,
+# hay que reiniciarlo para que deje de intentar esa ruta (se hace más abajo).
+[ -f /etc/sysctl.d/97-restify-sin-ipv6.conf ] && ipv6_nuevo=0 || ipv6_nuevo=1
 printf 'net.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\n' > /etc/sysctl.d/97-restify-sin-ipv6.conf
 sysctl -q -p /etc/sysctl.d/97-restify-sin-ipv6.conf
 echo "[ok] IPv6 desactivado (solo IPv4)"
@@ -97,6 +100,11 @@ print("[ok] docker: daemon.json actualizado (copia en daemon.json.bak)")
 EOF
 if [ "$codigo" -eq 0 ]; then
   echo "Reiniciando Docker: los contenedores se detienen unos segundos y arrancan solos..."
+  systemctl restart docker
+  sleep 5
+  docker ps --format 'table {{.Names}}\t{{.Status}}' | head -20
+elif [ "$codigo" -eq 10 ] && [ "$ipv6_nuevo" -eq 1 ]; then
+  echo "IPv6 recién desactivado: reiniciando Docker para que lo note (live-restore mantiene los contenedores)..."
   systemctl restart docker
   sleep 5
   docker ps --format 'table {{.Names}}\t{{.Status}}' | head -20

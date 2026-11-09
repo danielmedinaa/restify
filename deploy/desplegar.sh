@@ -46,6 +46,15 @@ if [ "$ENTORNO" = pro ]; then BASE_DOMINIO="$DOMINIO"; else BASE_DOMINIO="$ENTOR
 PREFIJO="restify-$ENTORNO"
 RED="restify-$ENTORNO-net"
 
+# Reintenta un comando de red (descargas, construcción de imágenes) ante un corte momentáneo: 3 intentos, 10 y 20 s de espera
+reintentar() {
+  local n=1
+  until "$@"; do
+    [ "$n" -lt 3 ] || return 1
+    echo "Falló; reintentando ($n/3) en $((n * 10)) s..."; sleep $((n * 10)); n=$((n + 1))
+  done
+}
+
 secreto() { python3 -c "import secrets,sys; print(secrets.token_hex(int(sys.argv[1])//2))" "${1:-48}"; }
 
 # ---------------------------------------------------------------- secretos y .env (solo si no existen)
@@ -129,8 +138,14 @@ if [ -n "$IMAGEN_API" ] && [ -n "$IMAGEN_FRONT" ]; then
     printf '%s' "$GHCR_TOKEN" | runuser -u restify -- docker login ghcr.io -u "$GHCR_USUARIO" --password-stdin
     unset GHCR_TOKEN
   fi
-  runuser -u restify -- docker pull "$IMAGEN_API"
-  runuser -u restify -- docker pull "$IMAGEN_FRONT"
+  # La descarga puede fallar por un corte momentáneo de red: se reintenta antes de dar el despliegue por fallido
+  for imagen in "$IMAGEN_API" "$IMAGEN_FRONT"; do
+    for intento in 1 2 3; do
+      runuser -u restify -- docker pull "$imagen" && break
+      [ "$intento" -lt 3 ] || { echo "ERROR: no se pudo descargar $imagen tras 3 intentos"; exit 1; }
+      echo "Reintentando la descarga ($intento/3) en $((intento * 10)) s..."; sleep $((intento * 10))
+    done
+  done
 else
   # Sin registro: se construyen aquí con una etiqueta propia del ambiente (no pisan a los otros)
   IMAGEN_API="restify-api:$ENTORNO"; IMAGEN_FRONT="restify-front:$ENTORNO"
@@ -165,7 +180,7 @@ systemctl restart "restify-agente@$ENTORNO.service"
 [ "$ENTORNO" != pro ] || systemctl enable --now "restify-respaldos@$ENTORNO.timer" >/dev/null
 
 # ---------------------------------------------------------------- panel y landing
-docker compose -p "$PREFIJO" -f deploy/docker-compose.yml --env-file deploy/.env up -d --build --remove-orphans
+reintentar docker compose -p "$PREFIJO" -f deploy/docker-compose.yml --env-file deploy/.env up -d --build --remove-orphans
 
 # ---------------------------------------------------------------- proxy compartido
 if [ "$FORZAR_PROXY" -eq 1 ] || ! docker ps -a --format '{{.Names}}' | grep -qx 'restify-proxy-caddy-1'; then
@@ -175,7 +190,7 @@ if [ "$FORZAR_PROXY" -eq 1 ] || ! docker ps -a --format '{{.Names}}' | grep -qx 
     printf 'DOMINIO=%s\nACME_EMAIL=%s\nCLOUDFLARE_API_TOKEN=%s\n' "$DOMINIO" "$ACME_EMAIL" "$CLOUDFLARE_API_TOKEN" > "$BASE/proxy/.env"
     # Opcional: solo estas IPs/rangos (separados por espacio) pueden abrir el panel. Vacío = sin restricción.
     [ -z "${PANEL_IPS_PERMITIDAS:-}" ] || printf 'PANEL_IPS_PERMITIDAS=%s\n' "$PANEL_IPS_PERMITIDAS" >> "$BASE/proxy/.env" )
-  docker compose -f "$BASE/proxy/docker-compose.yml" up -d --build
+  reintentar docker compose -f "$BASE/proxy/docker-compose.yml" up -d --build
 fi
 
 # ---------------------------------------------------------------- nuevas versiones de los clientes
