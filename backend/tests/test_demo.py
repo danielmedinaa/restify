@@ -107,3 +107,14 @@ async def test_si_la_moneda_principal_no_es_dolar_no_toca_nada():
     with pytest.raises(ValueError, match="USD"):
         await _preparar()
     assert await _contar(Producto) == 0 and await _contar(Proveedor) == 0  # nada quedó a medias
+
+
+async def test_los_usuarios_demo_pueden_tener_otra_clave_que_el_administrador(client):
+    clave_usuarios = "OtraClave2026Demo"
+    await _preparar(password_usuarios=clave_usuarios)
+    entra = lambda email, clave: client.post(f"{API}/auth/login", json={"email": email, "password": clave})
+    assert (await entra("mesero@demo.turestify.com", clave_usuarios)).status_code == 200
+    assert (await entra(ADMIN, PASSWORD)).status_code == 200
+    # la clave de los prospectos NO abre el administrador, ni la del administrador abre a los usuarios demo
+    assert (await entra(ADMIN, clave_usuarios)).status_code == 401
+    assert (await entra("mesero@demo.turestify.com", PASSWORD)).status_code == 401

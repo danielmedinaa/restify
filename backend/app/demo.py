@@ -195,13 +195,18 @@ async def preparar(
     email: str,
     nombre: str,
     password: str,
+    password_usuarios: str | None = None,
     tasa_bcv: Decimal = Decimal("36.50"),
     zona_horaria: str = "America/Caracas",
     token: str | None = None,
     dominio_correos: str = "demo.turestify.com",
 ) -> Resumen:
     """Deja la instancia lista. Si ya hay datos, solo agrega lo que falte."""
+    # Los usuarios demo (mesero, cocina, cajero) pueden tener una contraseña distinta a la del administrador:
+    # en una demo pública esa es la que se comparte con los prospectos
+    password_usuarios = password_usuarios or password
     TypeAdapter(Password).validate_python(password)
+    TypeAdapter(Password).validate_python(password_usuarios)
     r = Resumen()
     email = email.lower()
 
@@ -367,7 +372,7 @@ async def preparar(
         correo = correo_demo(nom, dominio_correos)
         r.usuarios.append((nom, correo))
         if not await session.scalar(select(exists().where(Usuario.email == correo))):
-            session.add(Usuario(email=correo, nombre=f"{nom} Demo", password_hash=hash_password(password),
+            session.add(Usuario(email=correo, nombre=f"{nom} Demo", password_hash=hash_password(password_usuarios),
                                 rol_id=roles[nom].id, sucursales=[sucursal]))
             r.sumar("usuarios")
 

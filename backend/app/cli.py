@@ -195,14 +195,19 @@ async def preparar_demo(args) -> None:
 
     from app import demo
 
+    password_usuarios = None
     if args.password_stdin:
-        password = sys.stdin.readline().rstrip("\n")
+        # línea 1: contraseña del administrador · línea 2 (opcional): la de los usuarios demo; vacía = la misma
+        lineas = sys.stdin.read().split("\n")
+        password = lineas[0]
+        password_usuarios = lineas[1] if len(lineas) > 1 and lineas[1] else None
     else:
         password = getpass.getpass("Contraseña del administrador y de los usuarios demo: ")
     try:
         async with SessionLocal() as session:
             r = await demo.preparar(
-                session, email=args.email, nombre=args.nombre, password=password, tasa_bcv=Decimal(args.tasa_bcv),
+                session, email=args.email, nombre=args.nombre, password=password, password_usuarios=password_usuarios,
+                tasa_bcv=Decimal(args.tasa_bcv),
                 zona_horaria=args.zona_horaria, token=args.token, dominio_correos=args.dominio_correos,
             )
     except ValidationError as e:
@@ -216,7 +221,7 @@ async def preparar_demo(args) -> None:
     print(f"Administrador: {args.email}")
     for rol, correo in r.usuarios:
         print(f"{rol}: {correo}")
-    print("(todos con la contraseña indicada)")
+    print("(el administrador con su contraseña; los usuarios demo con la suya)")
 
 
 def main() -> None:
