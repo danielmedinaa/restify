@@ -32,8 +32,8 @@ class Config:
 
     # Chat de Tawk.to (asistente). Vacío = no se carga. Están en el código de instalación:
     # https://embed.tawk.to/<TAWK_PROPERTY_ID>/<TAWK_WIDGET_ID>
-    TAWK_PROPERTY_ID = os.environ.get("TAWK_PROPERTY_ID", "")
-    TAWK_WIDGET_ID = os.environ.get("TAWK_WIDGET_ID", "")
+    TAWK_PROPERTY_ID = os.environ.get("TAWK_PROPERTY_ID", "6add0d849703073476bf9fd4")
+    TAWK_WIDGET_ID = os.environ.get("TAWK_WIDGET_ID", "1k5nnpj7o")
 
     # Límite de envíos del formulario por IP
     LEADS_MAX_POR_IP = int(os.environ.get("LEADS_MAX_POR_IP", "3"))

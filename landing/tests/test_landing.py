@@ -13,6 +13,8 @@ def client(tmp_path):
         SECRET_KEY = "test-secret"
         LEADS_DB = tmp_path / "leads.sqlite3"
         LEADS_MAX_POR_IP = 2
+        TAWK_PROPERTY_ID = ""
+        TAWK_WIDGET_ID = ""
 
     return create_app(ConfigTest).test_client()
 
@@ -157,3 +159,12 @@ def test_el_modo_acepta_tilde_y_valores_raros_abren_la_landing(monkeypatch):
 
 def test_la_landing_abierta_sigue_indexable(client):
     assert "Allow: /" in client.get("/robots.txt").get_data(as_text=True)
+
+
+def test_tawk_viene_activo_por_defecto(tmp_path):
+    class PorDefecto(Config):
+        TESTING = True
+        SECRET_KEY = "x"
+        LEADS_DB = tmp_path / "l.sqlite3"
+
+    assert "js/tawk.js" in create_app(PorDefecto).test_client().get("/").get_data(as_text=True)
