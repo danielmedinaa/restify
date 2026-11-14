@@ -112,14 +112,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: backend
           push: true
           tags: ${{ steps.ref.outputs.api }}
           cache-from: type=gha,scope=api
           cache-to: type=gha,scope=api,mode=max
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: front
           push: true
