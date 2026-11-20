@@ -68,8 +68,16 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: 22, cache: npm, cache-dependency-path: front/package-lock.json}
       - run: npm ci --no-audit --no-fund
-      - name: Versiones de TypeScript instaladas (diagnóstico)
-        run: npm ls typescript typescript-eslint --all || true
+      - name: Diagnóstico de TypeScript (qué instaló realmente npm ci)
+        run: |
+          node -v; npm -v
+          grep '"version"' node_modules/typescript/package.json
+          node -p "require.resolve('typescript') + ' -> ' + require('typescript').version" || true
+          npm ls typescript --all | head -40 || true
+      # Mientras se aclara por qué el servidor de GitHub termina con TypeScript 7 (typescript-eslint
+      # aún no lo soporta), se fuerza la versión fijada en package.json sin tocar el lockfile.
+      - name: Forzar TypeScript 5.9.3
+        run: npm install --no-save --no-audit --no-fund typescript@5.9.3
       - run: npm run lint
       - run: npm run typecheck
 
