@@ -39,7 +39,8 @@ export const ESTADO_ITEM: Record<EstadoItem, { label: string; tone: Tone }> = {
   cancelado: { label: "Cancelado", tone: "muted" },
 };
 
-export function tituloComanda(c: { mesa: string | null; nombre_cliente: string | null; id: number }) {
+export function tituloComanda(c: { mesa: string | null; nombre_cliente: string | null; id: number; turno?: number | null }) {
+  if (c.turno != null) return `Turno ${c.turno}${c.nombre_cliente ? ` · ${c.nombre_cliente}` : ""}`;
   if (c.mesa) return /^\d+$/.test(c.mesa) ? `Mesa ${c.mesa}` : c.mesa;
   return c.nombre_cliente ?? `Para llevar #${c.id}`;
 }

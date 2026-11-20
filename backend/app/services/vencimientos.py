@@ -30,7 +30,7 @@ async def cancelar_vencidas(minutos: int | None = None) -> list[int]:
         ids = list(
             await session.scalars(
                 select(Comanda.id).where(
-                    Comanda.origen == OrigenComanda.qr,
+                    Comanda.origen.in_([OrigenComanda.qr, OrigenComanda.kiosko]),
                     Comanda.estado == EstadoComanda.abierta,
                     Comanda.created_at < limite,
                     ~confirmado,

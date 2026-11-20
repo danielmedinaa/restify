@@ -57,7 +57,7 @@ class BodySizeLimitMiddleware:
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
 
-        limite = self.limite_uploads() if scope["path"].endswith("/medios/archivo") else self.limite_default
+        limite = self.limite_uploads() if scope["path"].endswith(("/medios/archivo", "/personalizacion/logo", "/personalizacion/fuente")) else self.limite_default
         for k, v in scope.get("headers", []):
             if k == b"content-length" and v.isdigit() and int(v) > limite:
                 respuesta = JSONResponse(

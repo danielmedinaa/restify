@@ -48,6 +48,7 @@ class Licencia:
     plan: str | None = None
     vence_en: str | None = None
     limites: dict[str, int | None] = field(default_factory=dict)
+    caracteristicas: dict[str, bool] = field(default_factory=dict)
 
 
 _cache: Licencia | None = None
@@ -98,6 +99,7 @@ async def _consultar(token_: str | None = None) -> Licencia | None:
         plan=d.get("plan"),
         vence_en=d.get("vence_en"),
         limites=d.get("limites") or {},
+        caracteristicas=d.get("caracteristicas") or {},
     )
 
 
@@ -133,6 +135,23 @@ async def exigir_acceso() -> None:
         if lic.estado == "activa":
             msg = "La suscripción de esta cuenta venció. Contacta a RESTIFY para renovarla."
         raise _error("suscripcion_inactiva", msg, estado=lic.estado, motivo=lic.motivo)
+
+
+async def tiene(caracteristica: str) -> bool:
+    """¿El plan incluye esta función? Sin control de licencia (desarrollo) siempre sí."""
+    lic = await obtener()
+    return True if lic is None else bool(lic.caracteristicas.get(caracteristica))
+
+
+async def exigir_caracteristica(caracteristica: str, nombre: str) -> None:
+    """Antes de usar una función de pago: falla (402) si el plan de esta cuenta no la incluye."""
+    if not await tiene(caracteristica):
+        lic = await obtener()
+        raise _error(
+            "caracteristica_plan",
+            f"{nombre} no está incluida en tu plan {lic.plan or ''}. Pide un cambio de plan para activarla.".replace("plan  ", "plan "),
+            caracteristica=caracteristica,
+        )
 
 
 async def exigir_cupo(session: AsyncSession, limite: str, contar: Select) -> None:

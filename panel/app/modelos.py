@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Boolean, CheckConstraint, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import JSON, Boolean, CheckConstraint, false, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -45,6 +45,13 @@ LIMITES = {
     "max_mesas": "Mesas",
     "max_productos": "Productos",
     "max_usuarios": "Usuarios",
+}
+
+
+# Funciones que un plan activa o no (verdadero/falso). Se pueden ajustar por suscripción.
+CARACTERISTICAS = {
+    "personalizacion": "Personalización (logo, colores y tipografía)",
+    "kiosko": "Caja automática (autopedido en pantalla del local)",
 }
 
 
@@ -132,6 +139,9 @@ class Plan(Marcas, db.Model):
     max_productos: Mapped[int | None] = mapped_column(Integer)
     max_usuarios: Mapped[int | None] = mapped_column(Integer)
 
+    personalizacion: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    kiosko: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+
     suscripciones = relationship("Suscripcion", back_populates="plan")
 
     __table_args__ = tuple(
@@ -172,6 +182,9 @@ class Suscripcion(Marcas, db.Model):
     ajuste_max_mesas: Mapped[int | None] = mapped_column(Integer)
     ajuste_max_productos: Mapped[int | None] = mapped_column(Integer)
     ajuste_max_usuarios: Mapped[int | None] = mapped_column(Integer)
+    # Característica a la medida: NULL = la del plan, True/False = forzada para este cliente
+    ajuste_personalizacion: Mapped[bool | None] = mapped_column(Boolean)
+    ajuste_kiosko: Mapped[bool | None] = mapped_column(Boolean)
 
     cliente = relationship("Cliente", back_populates="suscripciones")
     plan = relationship("Plan", back_populates="suscripciones")
@@ -183,6 +196,13 @@ class Suscripcion(Marcas, db.Model):
 
     def limites(self) -> dict:
         return {n: self.limite(n) for n in LIMITES}
+
+    def tiene(self, nombre: str) -> bool:
+        ajuste = getattr(self, f"ajuste_{nombre}")
+        return bool(ajuste if ajuste is not None else getattr(self.plan, nombre))
+
+    def caracteristicas(self) -> dict:
+        return {n: self.tiene(n) for n in CARACTERISTICAS}
 
 
 class Instancia(Marcas, db.Model):

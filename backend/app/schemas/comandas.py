@@ -164,6 +164,15 @@ class ComandaQrIn(Schema):
     items: list[ItemIn] = Field(min_length=1, max_length=30)
 
 
+class ComandaKioskoIn(Schema):
+    """Autopedido en la pantalla del local: el nombre basta (el teléfono es opcional)."""
+
+    nombre_cliente: NombrePersonaObligatorio
+    telefono_cliente: Telefono = None
+    notas: str | None = Field(default=None, max_length=500)
+    items: list[ItemIn] = Field(min_length=1, max_length=30)
+
+
 class AgregarItemsIn(Schema):
     items: list[ItemIn] = Field(min_length=1, max_length=50)
     enviar_a_cocina: bool = False
@@ -307,6 +316,7 @@ class ComandaOut(Schema):
     nombre_cliente: str | None
     telefono_cliente: str | None
     origen: OrigenComanda
+    turno: int | None = None
     estado: EstadoComanda
     notas: str | None
     seguimiento_url: str
@@ -328,6 +338,7 @@ class ComandaResumenOut(Schema):
     mesa: str | None
     nombre_cliente: str | None
     origen: OrigenComanda
+    turno: int | None = None
     estado: EstadoComanda
     total: Decimal
     items_pendientes: int
@@ -350,6 +361,7 @@ class PedidoPublicoOut(Schema):
     sucursal_id: int
     sucursal: str
     mesa: str | None
+    turno: int | None = None
     estado: EstadoComanda
     items: list[ItemPublicoOut]
     total: Decimal

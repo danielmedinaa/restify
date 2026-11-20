@@ -106,6 +106,7 @@ class TipoDescuento(StrEnum):
 class OrigenComanda(StrEnum):
     qr = "qr"
     caja = "caja"
+    kiosko = "kiosko"  # autopedido en la pantalla del local; se paga en caja
 
 
 class EstadoComanda(StrEnum):
@@ -134,6 +135,8 @@ class Comanda(TimestampMixin, Base):
     # Teléfono que deja el cliente al pedir por QR (para confirmar el pedido)
     telefono_cliente: Mapped[str | None] = mapped_column(String(20))
     origen: Mapped[OrigenComanda] = mapped_column(str_enum(OrigenComanda))
+    # Número de turno del día (solo autopedido): lo que el cliente espera en caja
+    turno: Mapped[int | None] = mapped_column(Integer)
     estado: Mapped[EstadoComanda] = mapped_column(
         str_enum(EstadoComanda), default=EstadoComanda.abierta, index=True
     )

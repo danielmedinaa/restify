@@ -1,3 +1,6 @@
+"use client";
+
+import { useTema } from "@/components/TemaProvider";
 import type { DatosFiscales, MontoFiscal } from "@/lib/api/schemas";
 import { cn } from "@/lib/cn";
 import { formatAmount } from "@/lib/money";
@@ -17,6 +20,7 @@ export function Documento({ d, formato, simbolos }: { d: DatosFiscales; formato:
   const sim = simbolos[codigo] ?? codigo;
   const m = (v: MontoFiscal) => formatAmount((enFiscal ? v.fiscal : v.principal) ?? v.principal);
   const ticket = formato === "ticket";
+  const logo = useTema().logo_url;
   const gravados = d.resumen_iva.filter((r) => Number(r.alicuota_iva) > 0);
   const hayExento = Number(d.exento.principal) > 0;
   const tasa = d.tasa_fiscal ? formatAmount(d.tasa_fiscal, Math.max(2, (d.tasa_fiscal.split(".")[1] ?? "").replace(/0+$/, "").length)) : null;
@@ -40,6 +44,10 @@ export function Documento({ d, formato, simbolos }: { d: DatosFiscales; formato:
       {/* Emisor */}
       <header className={cn(ticket ? "mb-3 text-center" : "mb-8 flex items-start justify-between gap-8")}>
         <div className={cn(ticket ? "" : "max-w-[60%]")}>
+          {logo && (
+            // eslint-disable-next-line @next/next/no-img-element -- logo propio del restaurante, servido por /media
+            <img src={logo} alt="" className={cn("w-auto object-contain", ticket ? "mx-auto mb-2 max-h-[14mm]" : "mb-3 max-h-[18mm]")} />
+          )}
           <h2 className={cn("font-display leading-none", ticket ? "mb-1 text-[20px]" : "mb-2 text-[30px]")}>{d.emisor.nombre_comercial}</h2>
           <p className="font-semibold">{d.emisor.razon_social ?? "Razón social sin cargar"}</p>
           <p>RIF {d.emisor.rif ?? "—"}</p>

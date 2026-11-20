@@ -129,7 +129,7 @@ function Detalle({ c }: { c: Comanda }) {
       <PageHeader
         eyebrow={
           <>
-            {`Comanda ${c.id} · ${c.origen === "qr" ? "por QR" : "en caja"} · ${hora.format(new Date(c.created_at))}${
+            {`Comanda ${c.id} · ${c.origen === "qr" ? "por QR" : c.origen === "kiosko" ? "por autopedido" : "en caja"} · ${hora.format(new Date(c.created_at))}${
               c.mesa && c.nombre_cliente ? ` · ${c.nombre_cliente}` : ""
             }`}
             {c.telefono_cliente && (

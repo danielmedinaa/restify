@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ErrorBox } from "@/components/ui/ErrorBox";
 import { Money } from "@/components/ui/Money";
+import { LogoCliente } from "@/components/ui/LogoCliente";
 import { Segmented } from "@/components/ui/Segmented";
 import { Sheet } from "@/components/ui/Sheet";
 import { StickyHeader } from "@/components/ui/StickyHeader";
@@ -45,6 +46,8 @@ interface MenuViewProps {
     scope: string;
     /** Pedir nombre y notas (primer pedido) o solo platos (agregar al pedido). */
     conDatos: boolean;
+    /** Pantalla de autopedido del local: teléfono opcional y se paga en caja. */
+    kiosko?: boolean;
     accion: string;
     enviar: (p: PedidoEnvio) => Promise<void>;
     error: ErrorView | null;
@@ -94,9 +97,12 @@ export function MenuView({ menu, eyebrow, titulo, pedido, arriba }: MenuViewProp
     <div className="mx-auto min-h-dvh max-w-2xl pb-40">
       <StickyHeader>
         <div className="flex items-center justify-between gap-4 px-5 pb-3 pt-4">
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="eyebrow truncate">{eyebrow}</span>
-            <h1 className="truncate font-display text-display-s leading-none">{titulo}</h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <LogoCliente size={40} />
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="eyebrow truncate">{eyebrow}</span>
+              <h1 className="truncate font-display text-display-s leading-none">{titulo}</h1>
+            </div>
           </div>
           {menu.monedas.filter((m) => m.activa).length > 1 && (
             <Segmented
@@ -204,6 +210,7 @@ export function MenuView({ menu, eyebrow, titulo, pedido, arriba }: MenuViewProp
               store.set((ls) => (cantidad <= 0 ? ls.filter((_, j) => j !== i) : ls.map((l, j) => (j === i ? { ...l, cantidad: Math.min(MAX_CANTIDAD, cantidad) } : l))))
             }
             conDatos={pedido.conDatos}
+            kiosko={pedido.kiosko}
             accion={pedido.accion}
             error={pedido.error}
             limpiarError={pedido.limpiarError}
@@ -472,6 +479,7 @@ function Carrito({
   total,
   cambiar,
   conDatos,
+  kiosko = false,
   accion,
   error,
   limpiarError,
@@ -485,6 +493,7 @@ function Carrito({
   total: string;
   cambiar: (index: number, cantidad: number) => void;
   conDatos: boolean;
+  kiosko?: boolean;
   accion: string;
   error: ErrorView | null;
   limpiarError: () => void;
@@ -497,7 +506,7 @@ function Carrito({
   // Se marcan los campos en rojo solo después del primer intento de envío
   const [intentado, setIntentado] = useState(false);
   const nombreOk = nombreValido(nombre);
-  const telefonoOk = telefonoValido(telefono);
+  const telefonoOk = (kiosko && telefono.trim() === "") || telefonoValido(telefono);
   const datosMalos = conDatos && intentado && (!nombreOk || !telefonoOk);
 
   return (
@@ -505,7 +514,7 @@ function Carrito({
       open={open}
       onOpenChange={onOpenChange}
       title="Tu pedido"
-      description="Revisa antes de enviarlo. El mesero lo confirma y pasa a cocina."
+      description={kiosko ? "Revisa tu pedido y envíalo. Después pasa a caja con tu número de turno para pagar." : "Revisa antes de enviarlo. El mesero lo confirma y pasa a cocina."}
       footer={
         <div className="flex flex-col gap-3">
           {datosMalos && (
@@ -532,7 +541,7 @@ function Carrito({
               try {
                 await enviar(
                   conDatos
-                    ? { nombre_cliente: nombre.replace(/\s+/g, " ").trim(), telefono_cliente: telefono.trim(), notas: notas.trim() || null }
+                    ? { nombre_cliente: nombre.replace(/\s+/g, " ").trim(), ...(telefono.trim() ? { telefono_cliente: telefono.trim() } : {}), notas: notas.trim() || null }
                     : { notas: null },
                 );
               } catch {
@@ -600,7 +609,7 @@ function Carrito({
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               maxLength={60}
-              autoComplete="name"
+              autoComplete={kiosko ? "off" : "name"}
               placeholder="Tu nombre"
               aria-invalid={intentado && !nombreOk ? true : undefined}
               className={cn(
@@ -611,14 +620,14 @@ function Carrito({
             {intentado && !nombreOk && <span className="text-sm text-err">Escribe tu nombre real, solo con letras.</span>}
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="eyebrow">Tu teléfono</span>
+            <span className="eyebrow">{kiosko ? "Tu teléfono (opcional)" : "Tu teléfono"}</span>
             <input
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
               type="tel"
               inputMode="tel"
               maxLength={20}
-              autoComplete="tel"
+              autoComplete={kiosko ? "off" : "tel"}
               placeholder="0412 123 4567"
               aria-invalid={intentado && !telefonoOk ? true : undefined}
               className={cn(
@@ -628,10 +637,12 @@ function Carrito({
             />
             {intentado && !telefonoOk && <span className="text-sm text-err">Escribe un celular válido, por ejemplo 0412 123 4567.</span>}
           </label>
-          <ul className="flex flex-col gap-2 border-l border-warn/60 pl-4 text-sm text-fg-2">
-            <li>Usa tu nombre y teléfono reales: si tus datos no son correctos, tu orden será ignorada.</li>
-            <li>Podemos escribirte o llamarte para confirmar. Si no respondes en 15 minutos, tu orden será cancelada.</li>
-          </ul>
+          {!kiosko && (
+            <ul className="flex flex-col gap-2 border-l border-warn/60 pl-4 text-sm text-fg-2">
+              <li>Usa tu nombre y teléfono reales: si tus datos no son correctos, tu orden será ignorada.</li>
+              <li>Podemos escribirte o llamarte para confirmar. Si no respondes en 15 minutos, tu orden será cancelada.</li>
+            </ul>
+          )}
           <label className="flex flex-col gap-1.5">
             <span className="eyebrow">Algo más que debamos saber</span>
             <input

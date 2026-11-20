@@ -1,8 +1,9 @@
 from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -132,6 +133,7 @@ def serializar_comanda(comanda: Comanda, monedas: list[Moneda]) -> dict:
         "nombre_cliente": comanda.nombre_cliente or (comanda.cliente.nombre if comanda.cliente else None),
         "telefono_cliente": comanda.telefono_cliente or (comanda.cliente.telefono if comanda.cliente else None),
         "origen": comanda.origen,
+        "turno": comanda.turno,
         "estado": comanda.estado,
         "notas": comanda.notas,
         "seguimiento_url": seguimiento_url(comanda),
@@ -207,6 +209,7 @@ def serializar_publico(comanda: Comanda, monedas: list[Moneda]) -> dict:
         "sucursal_id": comanda.sucursal_id,
         "sucursal": comanda.sucursal.nombre,
         "mesa": comanda.mesa.nombre if comanda.mesa else None,
+        "turno": comanda.turno,
         "estado": comanda.estado,
         "items": [
             {
@@ -234,6 +237,7 @@ def resumen_comanda(comanda: Comanda) -> dict:
         "mesa": comanda.mesa.nombre if comanda.mesa else None,
         "nombre_cliente": comanda.nombre_cliente or (comanda.cliente.nombre if comanda.cliente else None),
         "origen": comanda.origen,
+        "turno": comanda.turno,
         "estado": comanda.estado,
         "total": a_pagar_comanda(comanda),
         "items_pendientes": estados[EstadoItem.pendiente],
@@ -317,6 +321,17 @@ async def separar_mesas(session: AsyncSession, mesa_id: int) -> None:
     await session.execute(update(Mesa).where((Mesa.unida_a_id == mesa_id) | (Mesa.id == mesa_id)).values(unida_a_id=None))
 
 
+async def _siguiente_turno(session: AsyncSession, sucursal_id: int) -> int:
+    """Turno del autopedido: 1, 2, 3… y vuelve a 1 cada día (según la zona horaria configurada)."""
+    # Un candado por sucursal evita que dos clientes simultáneos reciban el mismo número
+    await session.execute(text("SELECT pg_advisory_xact_lock(:k)"), {"k": 7_000_000 + sucursal_id})
+    inicio = datetime.now(ZoneInfo(config.get("timezone"))).replace(hour=0, minute=0, second=0, microsecond=0).astimezone(UTC)
+    ultimo = await session.scalar(
+        select(func.max(Comanda.turno)).where(Comanda.sucursal_id == sucursal_id, Comanda.created_at >= inicio)
+    )
+    return (ultimo or 0) + 1
+
+
 async def crear_comanda(
     session: AsyncSession,
     *,
@@ -345,6 +360,7 @@ async def crear_comanda(
         nombre_cliente=nombre_cliente,
         telefono_cliente=telefono_cliente,
         origen=origen,
+        turno=await _siguiente_turno(session, sucursal_id) if origen == OrigenComanda.kiosko else None,
         notas=notas,
         tracking_token=new_public_token(),
         creada_por_id=usuario.id if usuario else None,
@@ -355,7 +371,7 @@ async def crear_comanda(
     # El índice único parcial resuelve la carrera de dos escaneos simultáneos
     await _flush_con_bloqueo_mesa(session)
     if items:
-        await agregar_items(session, comanda, items, por_cliente=origen == OrigenComanda.qr)
+        await agregar_items(session, comanda, items, por_cliente=origen in (OrigenComanda.qr, OrigenComanda.kiosko))
     return comanda
 
 

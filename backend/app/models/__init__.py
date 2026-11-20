@@ -23,6 +23,8 @@ from app.models.comandas import (
 from app.models.configuracion import Configuracion
 from app.models.compras import Compra, CompraItem, Proveedor
 from app.models.inventario import AlertaStock, EstadoAlerta, Insumo, Inventario, MovimientoStock, Presentacion, TipoMovimiento, Unidad, UNIDADES_BASE, UnidadMedida
+from app.models.plugins import Plugin
+from app.models.pos import PosDispositivo
 from app.models.monedas import Moneda, Operacion
 from app.models.seguridad import AlertaSeguridad, ApiKey, Auditoria, Bitacora, RefreshToken
 from app.models.usuarios import Accion, Modulo, Rol, RolPermiso, Sucursal, Usuario, usuario_sucursal
@@ -34,6 +36,8 @@ __all__ = [
     "MensajeComanda",
     "Estacion",
     "Configuracion",
+    "PosDispositivo",
+    "Plugin",
     "AlertaSeguridad",
     "Compra",
     "CompraItem",

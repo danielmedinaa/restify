@@ -32,9 +32,9 @@
   <button class="boton sec">Cambiar plan</button></form>
 <form method="post" action="{{ url_for('gestion.suscripcion_limites', id=s.id) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
 <table><thead><tr><th>Límite</th><th>Del plan</th><th>A la medida (opcional)</th><th>Vigente</th></tr></thead><tbody>
-{% for k, n in LIMITES.items() %}<tr><td>{{ n }}</td><td>{{ s.plan[k]|limite }}</td><td><input name="{{ k }}" value="{{ s['ajuste_' ~ k] if s['ajuste_' ~ k] is not none else '' }}" inputmode="numeric" placeholder="usar el del plan"></td><td><strong>{{ s.limite(k)|limite }}</strong></td></tr>{% endfor %}</tbody></table>
+{% for k, n in LIMITES.items() %}<tr><td>{{ n }}</td><td>{{ s.plan[k]|limite }}</td><td><input name="{{ k }}" value="{{ s['ajuste_' ~ k] if s['ajuste_' ~ k] is not none else '' }}" inputmode="numeric" placeholder="usar el del plan"></td><td><strong>{{ s.limite(k)|limite }}</strong></td></tr>{% endfor %}{% for k, n in CARACTERISTICAS.items() %}<tr><td>{{ n }}</td><td>{{ 'Sí' if s.plan[k] else 'No' }}</td><td><select name="{{ k }}"><option value="">usar el del plan</option><option value="1" {{ 'selected' if s['ajuste_' ~ k] is true }}>Activada</option><option value="0" {{ 'selected' if s['ajuste_' ~ k] is false }}>Desactivada</option></select></td><td><strong>{{ 'Sí' if s.tiene(k) else 'No' }}</strong></td></tr>{% endfor %}</tbody></table>
 <button class="boton sec">Guardar límites a la medida</button></form>
-{% else %}<table><tbody>{% for k, n in LIMITES.items() %}<tr><td>{{ n }}</td><td>{{ s.limite(k)|limite }}</td></tr>{% endfor %}</tbody></table>{% endif %}</section>
+{% else %}<table><tbody>{% for k, n in LIMITES.items() %}<tr><td>{{ n }}</td><td>{{ s.limite(k)|limite }}</td></tr>{% endfor %}{% for k, n in CARACTERISTICAS.items() %}<tr><td>{{ n }}</td><td>{{ 'Sí' if s.tiene(k) else 'No' }}</td></tr>{% endfor %}</tbody></table>{% endif %}</section>
 
 <section class="tarjeta"><h2>Vencimiento</h2>
 <form method="post" action="{{ url_for('gestion.suscripcion_vencimiento', id=s.id) }}" class="en-linea"><input type="hidden" name="csrf" value="{{ csrf_token() }}">

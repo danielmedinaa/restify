@@ -20,6 +20,7 @@ from app.schemas.catalogo import MenuOut
 from app.models import AutorMensaje
 from app.schemas.comandas import (
     AgregarItemsPublicoIn,
+    ComandaKioskoIn,
     ComandaQrIn,
     MensajeIn,
     MensajeOut,
@@ -27,7 +28,7 @@ from app.schemas.comandas import (
     PedidoPublicoOut,
 )
 from app.services import comandas as srv
-from app.services import config
+from app.services import config, licencia
 from app.services.menu import construir_menu
 from app.services.monedas import monedas_activas
 
@@ -100,6 +101,47 @@ async def menu_publico(sucursal_id: int, session: SessionDep):
     if not sucursal or not sucursal.activa:
         raise NoEncontrado("Sucursal")
     return await construir_menu(session, sucursal)
+
+
+class KioskoOut(Schema):
+    sucursal: str
+    disponible: bool
+    menu: MenuOut
+
+
+@router.get("/sucursales/{sucursal_id}/kiosko", response_model=KioskoOut)
+async def kiosko(sucursal_id: int, session: SessionDep):
+    """Lo que muestra la pantalla de autopedido del local: el menú, y si el plan incluye la función."""
+    sucursal = await session.get(Sucursal, sucursal_id)
+    if not sucursal or not sucursal.activa:
+        raise NoEncontrado("Sucursal")
+    return {"sucursal": sucursal.nombre, "disponible": await licencia.tiene("kiosko"), "menu": await construir_menu(session, sucursal)}
+
+
+@router.post("/sucursales/{sucursal_id}/kiosko/pedidos", response_model=PedidoCreadoOut, status_code=status.HTTP_201_CREATED)
+async def pedir_en_kiosko(sucursal_id: int, datos: ComandaKioskoIn, session: SessionDep):
+    """Autopedido: queda PENDIENTE con su número de turno hasta que caja lo apruebe. Se paga en caja."""
+    await licencia.exigir_caracteristica("kiosko", "La caja automática")
+    await check_rate_limit(f"kiosko-pedido:{sucursal_id}", 30, 60)
+    sucursal = await session.get(Sucursal, sucursal_id)
+    if not sucursal or not sucursal.activa:
+        raise NoEncontrado("Sucursal")
+    comanda = await srv.crear_comanda(
+        session,
+        sucursal_id=sucursal.id,
+        origen=OrigenComanda.kiosko,
+        items=datos.items,
+        nombre_cliente=datos.nombre_cliente,
+        telefono_cliente=datos.telefono_cliente,
+        notas=datos.notas,
+    )
+    await guardar(session)
+    comanda, monedas = await srv.notificar(session, comanda.id, "comanda.creada")
+    return {
+        "tracking_token": comanda.tracking_token,
+        "seguimiento_url": srv.seguimiento_url(comanda),
+        "pedido": srv.serializar_publico(comanda, monedas),
+    }
 
 
 @router.get("/pedidos/{tracking_token}", response_model=PedidoPublicoOut)

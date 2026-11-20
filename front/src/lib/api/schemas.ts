@@ -164,7 +164,7 @@ export type Zona = z.infer<typeof ZonaOut>;
 export const EstadoComanda = z.enum(["abierta", "cerrada", "cancelada"]);
 export const EstadoItem = z.enum(["pendiente", "en_cocina", "preparando", "listo", "entregado", "cancelado"]);
 export type EstadoItem = z.infer<typeof EstadoItem>;
-export const Origen = z.enum(["qr", "caja"]);
+export const Origen = z.enum(["qr", "caja", "kiosko"]);
 export const MetodoPago = z.enum(["efectivo", "tarjeta", "transferencia", "pago_movil", "otro"]);
 export type MetodoPago = z.infer<typeof MetodoPago>;
 
@@ -175,6 +175,7 @@ export const ComandaResumenOut = z.object({
   mesa: z.string().nullable(),
   nombre_cliente: z.string().nullable(),
   origen: Origen,
+  turno: z.number().nullable().default(null),
   estado: EstadoComanda,
   total: Decimal,
   items_pendientes: z.number(),
@@ -229,6 +230,7 @@ export const ComandaOut = z.object({
   nombre_cliente: z.string().nullable(),
   telefono_cliente: z.string().nullable(),
   origen: Origen,
+  turno: z.number().nullable().default(null),
   estado: EstadoComanda,
   notas: z.string().nullable(),
   seguimiento_url: z.string(),
@@ -315,6 +317,7 @@ export const PedidoPublicoOut = z.object({
   sucursal_id: z.number(),
   sucursal: z.string(),
   mesa: z.string().nullable(),
+  turno: z.number().nullable().default(null),
   estado: EstadoComanda,
   items: z.array(z.object({ id: z.number(), nombre: z.string(), estado: EstadoItem, precio_unitario: Decimal, notas: z.string().nullable() })),
   total: Decimal,
@@ -326,6 +329,7 @@ export type PedidoPublico = z.infer<typeof PedidoPublicoOut>;
 
 export const MesaPublicaOut = z.object({ mesa: z.string(), sucursal: z.string(), ocupada: z.boolean(), menu: MenuOut });
 export type MesaPublica = z.infer<typeof MesaPublicaOut>;
+export const KioskoOut = z.object({ sucursal: z.string(), disponible: z.boolean(), menu: MenuOut });
 
 export const PedidoCreadoOut = z.object({ tracking_token: z.string(), seguimiento_url: z.string(), pedido: PedidoPublicoOut });
 
@@ -735,3 +739,80 @@ export const MensajeOut = z.object({
   created_at: IsoDate,
 });
 export type Mensaje = z.infer<typeof MensajeOut>;
+
+// ---------- Personalización de la marca (logo, colores y tipografía)
+export const CaraFuente = z.object({
+  peso: z.string(),
+  estilo: z.string(),
+  rango: z.string().nullable(),
+  formato: z.string(),
+  url: z.string(),
+});
+export const FuenteMarca = z.object({ origen: z.enum(["google", "archivo"]), familia: z.string(), caras: z.array(CaraFuente) });
+export const TemaOut = z.object({
+  logo_url: z.string().nullable(),
+  colores: z.object({
+    fondo: z.string().nullable(),
+    texto: z.string().nullable(),
+    acento: z.string().nullable(),
+    texto_acento: z.string().nullable().default(null),
+    superficie: z.string().nullable().default(null),
+    linea: z.string().nullable().default(null),
+    ok: z.string().nullable().default(null),
+    aviso: z.string().nullable().default(null),
+    error: z.string().nullable().default(null),
+  }),
+  titulo: FuenteMarca.nullable(),
+  texto: FuenteMarca.nullable(),
+});
+export type Tema = z.infer<typeof TemaOut>;
+export type FuenteMarcaT = z.infer<typeof FuenteMarca>;
+export const EstadoPersonalizacionOut = z.object({ disponible: z.boolean(), plan: z.string().nullable(), tema: TemaOut });
+
+export const TEMA_VACIO: Tema = { logo_url: null, colores: { fondo: null, texto: null, acento: null, texto_acento: null, superficie: null, linea: null, ok: null, aviso: null, error: null }, titulo: null, texto: null };
+
+// ---------- Puntos de cobro (POS)
+export const PosOut = z.object({
+  id: z.number(),
+  nombre: z.string(),
+  sucursal_id: z.number().nullable(),
+  tipo: z.enum(["manual", "api"]),
+  activo: z.boolean(),
+  config: z.record(z.string(), z.unknown()).nullable(),
+  secretos_configurados: z.array(z.string()),
+});
+export type Pos = z.infer<typeof PosOut>;
+
+// ---------- Plugins
+export const PermisoPlugin = z.object({ permiso: z.string(), sensible: z.boolean(), descripcion: z.string() });
+export const ManifiestoPlugin = z.object({
+  slug: z.string(),
+  nombre: z.string(),
+  version: z.string(),
+  autor: z.string(),
+  descripcion: z.string(),
+  permisos: z.array(z.string()),
+  eventos: z.array(z.string()),
+  capacidades: z.array(z.string()),
+  url_servicio: z.string().nullable(),
+  huella_imagen: z.string().nullable(),
+});
+export const InspeccionPlugin = z.object({ firmado: z.boolean(), huella: z.string(), manifiesto: ManifiestoPlugin, permisos: z.array(PermisoPlugin), ya_instalado: z.boolean() });
+export type InspeccionPluginT = z.infer<typeof InspeccionPlugin>;
+export const PluginOut = z.object({
+  id: z.number(),
+  slug: z.string(),
+  nombre: z.string(),
+  version: z.string(),
+  autor: z.string(),
+  firmado: z.boolean(),
+  huella: z.string(),
+  activo: z.boolean(),
+  permisos_pedidos: z.array(PermisoPlugin),
+  permisos_aprobados: z.array(z.string()),
+  token_prefijo: z.string(),
+  ultimo_uso: IsoDate.nullable(),
+  created_at: IsoDate,
+});
+export type PluginT = z.infer<typeof PluginOut>;
+export const PluginInstaladoOut = PluginOut.extend({ token: z.string() });

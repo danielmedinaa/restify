@@ -59,9 +59,10 @@ export function ComandasLive() {
     void qc.invalidateQueries({ queryKey: keys.comanda(r.data.id) });
 
     const ver = { label: "Ver", onClick: () => router.push(`/panel/comandas/${r.data.id}`) };
-    if ((tipo === "comanda.creada" && r.data.origen === "qr") || tipo === "comanda.items_cliente") chime();
-    if (tipo === "comanda.creada" && r.data.origen === "qr") {
-      toast({ title: `Pedido por QR · ${tituloComanda(r.data)}`, description: "Espera tu aprobación para ir a cocina.", action: ver, duration: 12_000 });
+    const delCliente = r.data.origen === "qr" || r.data.origen === "kiosko";
+    if ((tipo === "comanda.creada" && delCliente) || tipo === "comanda.items_cliente") chime();
+    if (tipo === "comanda.creada" && delCliente) {
+      toast({ title: `${r.data.origen === "kiosko" ? "Autopedido" : "Pedido por QR"} · ${tituloComanda(r.data)}`, description: "Espera tu aprobación para ir a cocina.", action: ver, duration: 12_000 });
     }
     if (tipo === "comanda.items_cliente") {
       toast({ title: `${tituloComanda(r.data)} pidió más platos`, description: "Están por aprobar.", action: ver, duration: 12_000 });

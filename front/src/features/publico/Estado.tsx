@@ -1,10 +1,10 @@
-import { Logo } from "@/components/ui/Logo";
+import { LogoCliente } from "@/components/ui/LogoCliente";
 
 /** Pantalla completa para estados del cliente: mesa ocupada, QR inválido, etc. */
 export function EstadoPublico({ eyebrow, titulo, children }: { eyebrow?: string; titulo: string; children: React.ReactNode }) {
   return (
     <main className="grain mx-auto flex min-h-dvh max-w-2xl flex-col justify-between gap-12 px-6 py-10">
-      <Logo size={72} />
+      <LogoCliente size={72} conRestify />
       <div className="flex flex-col gap-6">
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <h1 className="font-display text-display-l leading-[0.9] tablet:text-display-xl">{titulo}</h1>

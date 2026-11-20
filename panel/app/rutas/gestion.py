@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from app import auditoria, seguridad as seg
 from app.extensions import db
 from datetime import UTC
-from app.modelos import ESTADOS, LIMITES, TRANSICIONES, Cliente, Instancia, Plan, Suscripcion, ahora
+from app.modelos import CARACTERISTICAS, ESTADOS, LIMITES, TRANSICIONES, Cliente, Instancia, Plan, Suscripcion, ahora
 from app.servicios import suscripciones as svc
 from app.servicios import validacion as val
 
@@ -270,6 +270,8 @@ def suscripcion_limites(id):
     s = _o404(Suscripcion, id)
     errores: dict = {}
     ajustes = {n: val.entero_o_none(request.form.get(n), n, errores) for n in LIMITES}
+    for n in CARACTERISTICAS:  # "" = la del plan, "1" = activada, "0" = desactivada
+        ajustes[n] = {"1": True, "0": False}.get(request.form.get(n, ""))
     if errores:
         flash("Revisa los límites: " + " ".join(errores.values()), "error")
     else:

@@ -57,6 +57,13 @@ class Settings(BaseSettings):
     max_image_mb: int = 5
     max_video_mb: int = 50
 
+    # Plugins: solo se instalan paquetes firmados con una de estas claves públicas (Ed25519, base64 de 32 bytes).
+    # Sin firma solo se acepta en desarrollo y con la opción encendida; en producción nunca.
+    plugin_claves_publicas: list[str] = []
+    plugins_permitir_sin_firma: bool = False
+    # Plugins retirados por RESTIFY: "slug", "slug@version" o "sha256:<huella>". No se pueden instalar ni usar.
+    plugins_revocados: list[str] = []
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

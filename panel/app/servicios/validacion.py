@@ -3,7 +3,7 @@ import re
 from flask import current_app
 
 from app.extensions import db
-from app.modelos import LIMITES, Instancia
+from app.modelos import CARACTERISTICAS, LIMITES, Instancia
 
 RESERVADOS = {
     "www", "panel", "admin", "api", "app", "mail", "smtp", "ftp", "ns1", "ns2", "soporte",
@@ -104,4 +104,6 @@ def validar_plan(form) -> tuple[dict, dict]:
         e["precio_mensual"] = "Precio no válido."
     for n in LIMITES:
         d[n] = entero_o_none(form.get(n), n, e)
+    for n in CARACTERISTICAS:
+        d[n] = form.get(n) == "1"
     return d, e

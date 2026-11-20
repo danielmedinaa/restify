@@ -130,6 +130,10 @@ def test_limites_plan_y_ajuste_y_api(app, sesion):
     j = r.get_json()
     assert j["subdominio"] == "acme"
     assert j["acceso"] is True and j["limites"]["max_sucursales"] == 5 and j["estado"] == "activa"
+    assert j["caracteristicas"] == {"personalizacion": False, "kiosko": False}  # Básico no la incluye
+    sesion.post(f"/suscripciones/{s.id}/limites", {"max_sucursales": "5", "personalizacion": "1"})
+    j = api.get("/api/v1/estado", headers={"Authorization": f"Bearer {token}"}).get_json()
+    assert j["caracteristicas"]["personalizacion"] is True  # ajuste a la medida
     svc.cambiar_estado(s, "suspendida", "Impago")
     db.session.commit()
     j = api.get("/api/v1/estado", headers={"Authorization": f"Bearer {token}"}).get_json()

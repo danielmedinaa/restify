@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.api.deps import verificar_api_key
-from app.api.routers import admin, auth, caja, catalogo, compras, operaciones, publico, setup, ws
+from app.api.routers import admin, auth, caja, catalogo, compras, operaciones, personalizacion, plugins, pos, publico, setup, ws
 from app.core.config import settings
 from app.core.database import engine
 from app.core.middleware import AuditMiddleware, BodySizeLimitMiddleware, SecurityHeadersMiddleware
@@ -75,7 +75,7 @@ async def cargar_configuracion() -> None:
 
 protegido = [Depends(verificar_api_key), Depends(cargar_configuracion), Depends(licencia.exigir_acceso)]
 
-for r in (auth.router, admin.roles, admin.usuarios, admin.sucursales, admin.seguridad, admin.bitacora_router, caja.router, compras.router, catalogo.router, operaciones.router, publico.router, setup.router):
+for r in (auth.router, admin.roles, admin.usuarios, admin.sucursales, admin.seguridad, admin.bitacora_router, caja.router, compras.router, catalogo.router, operaciones.router, publico.router, setup.router, personalizacion.router, personalizacion.publico, pos.router, plugins.router):
     app.include_router(r, prefix=API_PREFIX, dependencies=protegido)
 app.include_router(ws.router)
 

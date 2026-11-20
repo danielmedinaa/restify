@@ -9,6 +9,7 @@ import { Money } from "@/components/ui/Money";
 import { Segmented } from "@/components/ui/Segmented";
 import { StatusDot } from "@/components/ui/Status";
 import type { EstadoItem, PedidoPublico } from "@/lib/api/schemas";
+import { LogoCliente } from "@/components/ui/LogoCliente";
 import { cn } from "@/lib/cn";
 import { smooth, snappy } from "@/lib/motion";
 import type { ConexionPedido } from "./queries";
@@ -44,6 +45,7 @@ export function PedidoView({ pedido, tracking, conexion }: { pedido: PedidoPubli
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-5 pb-36 pt-8">
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
+          <LogoCliente size={44} className="mb-2" />
           <span className="eyebrow">{pedido.sucursal}</span>
           <span className="text-lead text-fg-2">{pedido.mesa ? (/^\d+$/.test(pedido.mesa) ? `Mesa ${pedido.mesa}` : pedido.mesa) : "Para llevar"}</span>
         </div>

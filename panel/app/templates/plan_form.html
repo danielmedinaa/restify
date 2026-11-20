@@ -10,4 +10,6 @@
 {{ campo('descripcion','Descripción',p.descripcion if p else '',errores) }}
 <h2>Límites <small class="mudo">(vacío = ilimitado)</small></h2>
 <div class="grid3">{% for k, n in LIMITES.items() %}{{ campo(k, 'Máx. ' ~ n|lower, p[k] if p else '', errores, 'text', extra='inputmode="numeric"') }}{% endfor %}</div>
+<h2>Funciones incluidas</h2>
+{% for k, n in CARACTERISTICAS.items() %}<label class="en-linea"><input type="checkbox" name="{{ k }}" value="1" {{ 'checked' if p and p[k] }}> {{ n }}</label>{% endfor %}
 <button class="boton">Guardar</button></form>{% endblock %}

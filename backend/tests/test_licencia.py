@@ -14,10 +14,11 @@ def panel(monkeypatch):
     monkeypatch.setattr(settings, "panel_url", "http://panel/api/v1/estado")
     monkeypatch.setattr(settings, "panel_token", "rst_test")
     estado = {"estado": "activa", "acceso": True, "motivo": None, "plan": "Básico", "vence_en": None,
-              "limites": {"max_sucursales": None, "max_salas": None, "max_mesas": None, "max_productos": None, "max_usuarios": None}}
+              "limites": {"max_sucursales": None, "max_salas": None, "max_mesas": None, "max_productos": None, "max_usuarios": None},
+              "caracteristicas": {"personalizacion": False}}
 
     async def consultar():
-        return licencia.Licencia(**{k: estado[k] for k in ("acceso", "estado", "motivo", "plan", "vence_en", "limites")})
+        return licencia.Licencia(**{k: estado[k] for k in ("acceso", "estado", "motivo", "plan", "vence_en", "limites", "caracteristicas")})
 
     monkeypatch.setattr(licencia, "_consultar", consultar)
     licencia.reiniciar()

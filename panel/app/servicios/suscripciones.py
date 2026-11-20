@@ -11,7 +11,7 @@ from flask import current_app
 from app import auditoria
 from app.extensions import db
 from app.infra.aprovisionador import obtener
-from app.modelos import ESTADOS, LIMITES, TRANSICIONES, Instancia, Suscripcion, ahora
+from app.modelos import CARACTERISTICAS, ESTADOS, LIMITES, TRANSICIONES, Instancia, Suscripcion, ahora
 
 
 class ReglaError(Exception):
@@ -101,11 +101,12 @@ def cambiar_plan(s: Suscripcion, plan) -> None:
 
 
 def fijar_ajustes(s: Suscripcion, ajustes: dict) -> None:
-    antes = {n: getattr(s, f"ajuste_{n}") for n in LIMITES}
-    for n in LIMITES:
+    nombres = [*LIMITES, *CARACTERISTICAS]
+    antes = {n: getattr(s, f"ajuste_{n}") for n in nombres}
+    for n in nombres:
         setattr(s, f"ajuste_{n}", ajustes.get(n))
     auditoria.registrar("suscripcion.ajustes", "suscripcion", s.id,
-                        {"antes": antes, "despues": {n: ajustes.get(n) for n in LIMITES}})
+                        {"antes": antes, "despues": {n: ajustes.get(n) for n in nombres}})
 
 
 def rotar_token(inst: Instancia) -> str:
@@ -179,4 +180,5 @@ def estado_para_instancia(s: Suscripcion) -> dict:
         "plan": s.plan.nombre,
         "vence_en": s.vence_en.isoformat() if s.vence_en else None,
         "limites": s.limites(),  # None = ilimitado
+        "caracteristicas": s.caracteristicas(),
     }

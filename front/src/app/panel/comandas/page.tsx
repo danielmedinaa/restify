@@ -136,7 +136,7 @@ function Fila({ c, viva }: { c: ComandaResumen; viva?: boolean }) {
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-title font-medium">{tituloComanda(c)}</span>
           <span className="text-sm text-fg-3">
-            #{c.id} · {c.origen === "qr" ? "QR" : "Caja"}
+            #{c.id} · {c.origen === "qr" ? "QR" : c.origen === "kiosko" ? "Autopedido" : "Caja"}
             {c.mesa && c.nombre_cliente ? ` · ${c.nombre_cliente}` : ""}
           </span>
         </span>

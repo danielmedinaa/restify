@@ -8,7 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from app import seguridad
 from app.config import Config
 from app.extensions import db, migrate
-from app.modelos import ACCIONES, ESTADOS, LIMITES, MODULOS, Admin, Plan, Rol
+from app.modelos import ACCIONES, CARACTERISTICAS, ESTADOS, LIMITES, MODULOS, Admin, Plan, Rol
 
 ROLES_BASE = {
     "Superadmin": {"descripcion": "Acceso total. No se puede editar.", "sistema": True, "permisos": {}},
@@ -29,7 +29,7 @@ ROLES_BASE = {
 PLANES_BASE = [  # ejemplos: ajústalos desde el panel
     dict(nombre="Básico", descripcion="Un local, lo esencial.", precio_mensual=29, max_sucursales=1, max_salas=1, max_mesas=15, max_productos=100, max_usuarios=5),
     dict(nombre="Pro", descripcion="Varias sucursales.", precio_mensual=79, max_sucursales=3, max_salas=4, max_mesas=60, max_productos=500, max_usuarios=20),
-    dict(nombre="Premium", descripcion="Sin límites prácticos.", precio_mensual=149, max_sucursales=None, max_salas=None, max_mesas=None, max_productos=None, max_usuarios=None),
+    dict(nombre="Premium", descripcion="Sin límites prácticos.", precio_mensual=149, max_sucursales=None, max_salas=None, max_mesas=None, max_productos=None, max_usuarios=None, personalizacion=True, kiosko=True),
 ]
 
 
@@ -68,7 +68,7 @@ def create_app(config: type[Config] = Config) -> Flask:
         app.register_blueprint(bp)
 
     app.jinja_env.globals.update(
-        ESTADOS=ESTADOS, LIMITES=LIMITES, MODULOS=MODULOS, ACCIONES=ACCIONES,
+        ESTADOS=ESTADOS, LIMITES=LIMITES, CARACTERISTICAS=CARACTERISTICAS, MODULOS=MODULOS, ACCIONES=ACCIONES,
         BANNER_ENTORNO=os.environ.get("BANNER_ENTORNO", ""),  # "DESARROLLO" / "PRE PRODUCCION"; vacío en producción
     )
 
