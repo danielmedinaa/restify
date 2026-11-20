@@ -68,6 +68,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: 22, cache: npm, cache-dependency-path: front/package-lock.json}
       - run: npm ci --no-audit --no-fund
+      - name: Versiones de TypeScript instaladas (diagnóstico)
+        run: npm ls typescript typescript-eslint --all || true
       - run: npm run lint
       - run: npm run typecheck
 
